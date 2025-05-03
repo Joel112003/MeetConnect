@@ -20,7 +20,11 @@ if (!mongoURI) {
 }
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: "VITE_SERVER_FRONTEND_URL", // frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json({ limit: "50kb" }));
 app.use(express.urlencoded({ limit: "50kb", extended: true }));
 
