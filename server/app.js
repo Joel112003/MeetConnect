@@ -21,7 +21,7 @@ if (!mongoURI) {
 
 // Middlewares
 app.use(cors({
-  origin: "VITE_SERVER_FRONTEND_URL", // frontend URL
+  origin: process.env.VITE_SERVER_FRONTEND_URL || "http://localhost:5173", // frontend URL
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
