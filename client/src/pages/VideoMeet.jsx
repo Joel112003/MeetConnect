@@ -967,7 +967,7 @@ const VideoMeet = () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
-      window.location.href = "/";
+      window.location.href = "/home";
     }, 1000);
   };
 
