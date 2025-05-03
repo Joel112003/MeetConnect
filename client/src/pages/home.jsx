@@ -3,7 +3,7 @@ import withAuth from '../utils/withAuth'
 import { useNavigate } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
 
-function Home() {
+function home() {
   let navigate = useNavigate()
   const [meetingCode, setMeetingCode] = useState("")
   
@@ -119,4 +119,4 @@ function Home() {
   )
 }
 
-export default withAuth(Home)
+export default withAuth(home)
