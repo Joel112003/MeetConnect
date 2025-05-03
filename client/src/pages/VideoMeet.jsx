@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+
 
 // Icons
 const VideocamIcon = () => (
@@ -241,6 +243,7 @@ const VideoMeet = () => {
   const socketIdRef = useRef();
   const localVideoref = useRef();
   const chatContainerRef = useRef();
+  const navigate = useNavigate();
 
   // State
   const [videoAvailable, setVideoAvailable] = useState(true);
@@ -967,7 +970,7 @@ const VideoMeet = () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
-      window.location.href = "/home";
+      navigate("/home");;
     }, 1000);
   };
 
