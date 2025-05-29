@@ -11,7 +11,7 @@ import {
   FiArrowLeft,
 } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import 'react-toastify/dist/ReactToastify.css';
 import { AuthContext } from "../contexts/AuthContext";
 import { useLocation } from 'react-router-dom';
 
@@ -292,7 +292,7 @@ const Authentication = () => {
                           value={formData.username}
                           onChange={handleChange}
                           className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          placeholder="johndoe"
+                          placeholder="username"
                         />
                       </motion.div>
                     </div>
@@ -561,7 +561,7 @@ const Authentication = () => {
           transition={{ delay: 0.5 }}
           className="mt-6 text-center text-gray-600 text-sm"
         >
-          © {new Date().getFullYear()} Your Company. All rights reserved.
+          © {new Date().getFullYear()} MeetConnect. All rights reserved.
         </motion.div>
       </motion.div>
     </div>

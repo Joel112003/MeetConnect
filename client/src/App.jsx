@@ -5,28 +5,24 @@ import { AuthProvider } from "./contexts/AuthContext";
 import VideoMeet from "./pages/VideoMeet";
 import Home from "./pages/home";
 import History from "./pages/History";
+import NotFound from "./NotFound"; // Add your 404 component
 
 function App() {
   return (
-    <>
-      <Router>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/auth" element={<Authentication />} />
-            <Route path="/home" element={<Home />} />
-
-            <Route path="/history" element={<History />} />
-            <Route path="/:url" element={<VideoMeet />} />
-
-            {/* <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/auth" element={<Authentication />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/profile" element={<Profile />} /> */}
-          </Routes>
-        </AuthProvider>
-      </Router>
-    </>
+          <Route path="/history" element={<History />} />
+          {/* Video meet routes - be more specific if possible */}
+          <Route path="/:url" element={<VideoMeet />} />
+          {/* 404 catch-all route - must be last */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 

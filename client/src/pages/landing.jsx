@@ -249,19 +249,13 @@ export default function Landing() {
               </>
             ) : (
               <>
+                
                 <motion.button
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   className="hidden md:block px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
                 >
-                  <Link to="/jg9unp">Join as Guest</Link>
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="hidden md:block px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
-                >
-                  <Link to="/auth">Sign in</Link>
+                  <Link to="/auth">Already have an account ?</Link>
                 </motion.button>
                 <Link
                   to="/auth"
@@ -585,91 +579,6 @@ export default function Landing() {
                 </div>
               </div>
             </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="relative z-10 py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, type: "spring" }}
-            className="text-center mb-12"
-          >
-            <motion.h2
-              whileInView={{
-                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-              }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              style={{
-                backgroundSize: "200% auto",
-                backgroundImage:
-                  "linear-gradient(to right, #4f46e5, #7c3aed, #4f46e5)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
-              className="text-3xl font-bold mb-4"
-            >
-              Everything you need for productive meetings
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-gray-600 max-w-2xl mx-auto"
-            >
-              Powerful features designed to help your team collaborate
-              effectively
-            </motion.p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard
-              icon={<FiVideo className="w-5 h-5" />}
-              title="HD Video Conferencing"
-              description="Crystal clear video quality with adaptive resolution"
-              delay={0.1}
-            />
-            <FeatureCard
-              icon={<FiMessageSquare className="w-5 h-5" />}
-              title="Real-time Chat"
-              description="Chat with participants during meetings"
-              delay={0.2}
-            />
-            <FeatureCard
-              icon={<FiCalendar className="w-5 h-5" />}
-              title="Scheduling"
-              description="Integrates with your calendar for easy scheduling"
-              delay={0.3}
-            />
-            <FeatureCard
-              icon={<FiShare2 className="w-5 h-5" />}
-              title="Screen Sharing"
-              description="Share your screen with participants"
-              delay={0.4}
-            />
-            <FeatureCard
-              icon={<FiSettings className="w-5 h-5" />}
-              title="Customizable Settings"
-              description="Tailor the experience to your needs"
-              delay={0.5}
-            />
-            <FeatureCard
-              icon={<FiUsers className="w-5 h-5" />}
-              title="Breakout Rooms"
-              description="Split into smaller groups during meetings"
-              delay={0.6}
-            />
           </div>
         </div>
       </section>
