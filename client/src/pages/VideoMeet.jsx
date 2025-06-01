@@ -663,8 +663,9 @@ const VideoMeet = () => {
     socketRef.current.on("participants", (count) => setParticipants(count));
 
     socketRef.current.on("connect", () => {
-      // Use the URL parameter from useParams instead of window.location.href
-      socketRef.current.emit("join-call", url);
+      // Create a full path that matches the expected format by the server
+      const fullPath = `/meeting/${url}`;
+      socketRef.current.emit("join-call", fullPath);
       socketIdRef.current = socketRef.current.id;
 
       socketRef.current.on("chat-message", addMessage);
