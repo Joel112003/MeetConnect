@@ -11,7 +11,7 @@ function home() {
   
   let handleJoinVideoCall = async () => {
     await addToUserHistory(meetingCode)
-    navigate(`/${meetingCode}`)
+    navigate(`/meeting/${meetingCode}`)
   }
   
   return (

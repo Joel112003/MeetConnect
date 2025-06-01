@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+
 
 
 // Icons
@@ -244,6 +245,7 @@ const VideoMeet = () => {
   const localVideoref = useRef();
   const chatContainerRef = useRef();
   const navigate = useNavigate();
+  const { url } = useParams(); // Get the URL parameter from the route
 
   // State
   const [videoAvailable, setVideoAvailable] = useState(true);
@@ -661,7 +663,8 @@ const VideoMeet = () => {
     socketRef.current.on("participants", (count) => setParticipants(count));
 
     socketRef.current.on("connect", () => {
-      socketRef.current.emit("join-call", window.location.href);
+      // Use the URL parameter from useParams instead of window.location.href
+      socketRef.current.emit("join-call", url);
       socketIdRef.current = socketRef.current.id;
 
       socketRef.current.on("chat-message", addMessage);

@@ -19,7 +19,7 @@ function App() {
           {/* Video meet routes - be more specific if possible */}
           <Route path="/:url" element={<VideoMeet />} />
           {/* 404 catch-all route - must be last */}
-          <Route path="*" element={<NotFound />} />
+          <Route path="/*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
     </Router>

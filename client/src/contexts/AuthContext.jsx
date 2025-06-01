@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
-    const handleLogin = async (username, password) => {
+    const handleLogin = async (username, password, from = null) => {
         try {
             let request = await client.post("/login", {
                 username: username,
@@ -52,7 +52,14 @@ export const AuthProvider = ({ children }) => {
 
             if (request.status === httpStatus.OK) {
                 localStorage.setItem("token", request.data.token);
-                router("/home")
+                
+                // If there's a redirect path from the location state, use it
+                // Otherwise go to home page
+                if (from) {
+                    router(from);
+                } else {
+                    router("/home");
+                }
             }
         } catch (err) {
             throw err;

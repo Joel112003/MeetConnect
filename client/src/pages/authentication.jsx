@@ -98,9 +98,10 @@ const Authentication = () => {
 
     try {
       if (authState === "login") {
-        await handleLogin(formData.username, formData.password);
+        // Get the redirect path from location state if it exists
+        const from = location.state?.from?.pathname || null;
+        await handleLogin(formData.username, formData.password, from);
         toast.success(`Welcome back, ${formData.username}!`);
-        setTimeout(() => navigate("/home"), 1000); // Navigate after toast is shown
       } else if (authState === "register") {
         await handleRegister(
           formData.name,

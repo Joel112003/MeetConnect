@@ -100,7 +100,7 @@ export default function History() {
                                 <div className="col-span-3 md:col-span-4 text-gray-500 text-sm">{formatDate(meeting.date)}</div>
                                 <div className="col-span-2 text-right">
                                     <button 
-                                        onClick={() => navigate(`/${meeting.meetingCode}`)}
+                                        onClick={() => navigate(`/meeting/${meeting.meetingCode}`)}
                                         className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors shadow-sm"
                                     >
                                         Join
