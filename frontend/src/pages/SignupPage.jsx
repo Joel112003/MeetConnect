@@ -1,241 +1,224 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { validateSignupForm, formatValidationError } from '../utils/validators'
-import { useAuth } from '../hooks/useAuth'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { validateSignupForm, formatValidationError } from "../utils/validators";
+import { useAuth } from "../hooks/useAuth";
+import { AppIcon } from "../assets/icons/AppIcons";
+import meetConnectLogo from "../assets/images/MeetConnect.png";
+
+function Field({
+  label,
+  id,
+  name,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  disabled,
+  icon,
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.12em] text-white/40">
+        {label}
+      </label>
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30">
+          <AppIcon name={icon} size={16} />
+        </span>
+        <input
+          id={id}
+          name={name || id}
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-11 pr-4 text-sm text-white outline-none transition placeholder:text-white/30 focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function SignupPage() {
-  const navigate = useNavigate()
-  const { signup, loading: authLoading } = useAuth()
+  const navigate = useNavigate();
+  const { signup, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  })
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSignup = async (e) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
-
-    // Validate form
-    const validation = validateSignupForm(formData)
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    const validation = validateSignupForm(formData);
     if (!validation.isValid) {
-      setError(formatValidationError(validation.errors))
-      return
+      setError(formatValidationError(validation.errors));
+      return;
     }
-
     try {
-      const result = await signup(formData.username, formData.email, formData.password)
-
+      const result = await signup(
+        formData.username,
+        formData.email,
+        formData.password,
+      );
       if (result.success) {
-        setSuccess('Account created successfully! Redirecting...')
-        // Redirect after brief delay
-        setTimeout(() => {
-          navigate('/dashboard')
-        }, 500)
+        setSuccess("Account created! Redirecting...");
+        setTimeout(() => navigate("/dashboard"), 500);
       } else {
-        setError(result.error || 'Signup failed')
+        setError(result.error || "Signup failed");
       }
     } catch (err) {
-      setError(err.message || 'An error occurred during signup')
+      setError(err.message || "An error occurred during signup");
     }
-  }
+  };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 p-4 overflow-hidden">
-      {/* Signup Card */}
-      <div className="relative z-10 w-full max-w-md">
-        <div
-          className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl p-8 md:p-12 border border-white/20"
-          style={{ animation: 'slideInUp 0.7s ease-out' }}
+    <div className="relative min-h-screen overflow-hidden bg-zinc-950 px-4 py-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.18),transparent_55%)]" />
+
+      <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-blue-200/10 bg-[#03080f]/80 px-10 backdrop-blur-xl animate-slide-down">
+        <button
+          className="flex items-center gap-2.5"
+          onClick={() => navigate("/")}
+          type="button"
         >
-          {/* Header */}
-          <div className="text-center mb-10" style={{ animation: 'slideInUp 0.7s ease-out 0.1s backwards' }}>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
-              Create Account
-            </h1>
-            <p className="text-gray-600 text-sm font-medium tracking-wide">
-              Join us today
-            </p>
+          <span className="flex h-[34px] w-[34px] items-center justify-center overflow-hidden rounded-[9px]">
+            <img src={meetConnectLogo} alt="MeetConnect logo" className="h-full w-full scale-225 object-contain" />
+          </span>
+          <span className="font-display text-[15px] font-bold tracking-tight text-white">MeetConnect</span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          <button
+            className="rounded-lg px-4 py-1.5 text-sm font-medium text-white/60 transition hover:bg-white/5 hover:text-white"
+            onClick={() => navigate("/")}
+            type="button"
+          >
+            Home
+          </button>
+          <button
+            className="rounded-[9px] bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-[0_2px_16px_rgba(37,99,235,0.3)] transition hover:bg-blue-500 hover:-translate-y-px"
+            onClick={() => navigate("/login")}
+            type="button"
+          >
+            Sign in
+          </button>
+        </div>
+      </header>
+
+      <div className="relative z-10 flex min-h-screen items-center justify-center pt-16">
+        <div className="w-full max-w-md">
+        <div className="mb-8 flex justify-center">
+          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl">
+            <img src={meetConnectLogo} alt="MeetConnect logo" className="h-full w-full scale-225 object-contain" />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/95 p-8 shadow-2xl shadow-black/50 sm:p-10">
+          <div className="mb-8 text-center">
+            <h1 className="mb-1 text-2xl font-bold tracking-tight text-white">Create account</h1>
+            <p className="text-sm text-white/50">Join MeetConnect - it only takes a moment</p>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div
-              className="mb-5 p-3 bg-red-50 border-l-4 border-red-500 text-red-600 text-sm rounded flex items-center gap-2"
-              style={{ animation: 'slideInUp 0.3s ease-out' }}
-            >
-              <span className="text-xl">⚠</span>
+            <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-400/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-300">
+              <AppIcon name="alert" size={16} className="mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
-
-          {/* Success Message */}
           {success && (
-            <div
-              className="mb-5 p-3 bg-green-50 border-l-4 border-green-500 text-green-600 text-sm rounded flex items-center gap-2"
-              style={{ animation: 'slideInUp 0.3s ease-out' }}
-            >
-              <span className="text-xl">✓</span>
+            <div className="mb-5 flex items-center gap-2 rounded-xl border border-emerald-400/35 bg-emerald-500/10 px-3 py-2.5 text-sm text-emerald-300">
+              <AppIcon name="check" size={16} className="shrink-0" />
               <span>{success}</span>
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSignup} className="space-y-5">
-            {/* Username Field */}
-            <div style={{ animation: 'slideInUp 0.7s ease-out 0.2s backwards' }}>
-              <label htmlFor="username" className="block text-sm font-semibold text-gray-800 uppercase tracking-wider mb-2">
-                Username
-              </label>
-              <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 text-lg group-focus-within:scale-110 transition-transform">
-                  👤
-                </span>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  placeholder="john_doe"
-                  value={formData.username}
-                  onChange={handleChange}
-                  disabled={authLoading}
-                  required
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg font-medium text-gray-800 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
+          <form onSubmit={handleSignup} className="space-y-4">
+            <Field
+              label="Username"
+              id="username"
+              name="username"
+              placeholder="john_doe"
+              value={formData.username}
+              onChange={handleChange}
+              disabled={authLoading}
+              icon="user"
+            />
 
-            {/* Email Field */}
-            <div style={{ animation: 'slideInUp 0.7s ease-out 0.3s backwards' }}>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-800 uppercase tracking-wider mb-2">
-                Email Address
-              </label>
-              <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 text-lg group-focus-within:scale-110 transition-transform">
-                  ✉
-                </span>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={authLoading}
-                  required
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg font-medium text-gray-800 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
+            <Field
+              label="Email address"
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              disabled={authLoading}
+              icon="mail"
+            />
 
-            {/* Password Field */}
-            <div style={{ animation: 'slideInUp 0.7s ease-out 0.4s backwards' }}>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-800 uppercase tracking-wider mb-2">
-                Password
-              </label>
-              <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 text-lg group-focus-within:scale-110 transition-transform">
-                  🔒
-                </span>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
-                  disabled={authLoading}
-                  required
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg font-medium text-gray-800 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
+            <Field
+              label="Password"
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={authLoading}
+              icon="lock"
+            />
 
-            {/* Confirm Password Field */}
-            <div style={{ animation: 'slideInUp 0.7s ease-out 0.5s backwards' }}>
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-800 uppercase tracking-wider mb-2">
-                Confirm Password
-              </label>
-              <div className="relative group">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 text-lg group-focus-within:scale-110 transition-transform">
-                  🔐
-                </span>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  disabled={authLoading}
-                  required
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg font-medium text-gray-800 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
-            </div>
+            <Field
+              label="Confirm password"
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              placeholder="••••••••"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              disabled={authLoading}
+              icon="shield"
+            />
 
-            {/* Signup Button */}
             <button
               type="submit"
               disabled={authLoading}
-              className="w-full mt-8 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-sm uppercase tracking-wide rounded-lg shadow-lg hover:shadow-xl hover:translate-y-0.5 active:translate-y-px disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 transition-all duration-300 relative overflow-hidden group"
-              style={{ animation: 'slideInUp 0.7s ease-out 0.6s backwards' }}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-800"
             >
-              <span className="absolute inset-0 bg-white/30 translate-x-full group-hover:translate-x-0 transition-transform duration-500"></span>
-              <span className="relative flex items-center justify-center gap-2">
-                {loading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    CREATING ACCOUNT...
-                  </>
-                ) : (
-                  'Sign Up'
-                )}
-              </span>
+              {authLoading ? (
+                <>
+                  <span className="animate-spin">
+                    <AppIcon name="refresh" size={16} />
+                  </span>
+                  Creating account...
+                </>
+              ) : (
+                "Create account"
+              )}
             </button>
           </form>
 
-          {/* Login Link */}
-          <div className="mt-8 text-center text-sm text-gray-600" style={{ animation: 'slideInUp 0.7s ease-out 0.7s backwards' }}>
-            Already have an account?{' '}
-            <a href="/login" className="text-blue-600 font-bold hover:text-blue-700 transition-colors duration-300">
-              Sign In
+          <p className="mt-6 text-center text-sm text-white/50">
+            Already have an account?{" "}
+            <a href="/login" className="font-semibold text-blue-400 hover:text-blue-300">
+              Sign in
             </a>
-          </div>
+          </p>
         </div>
       </div>
-
-      <style>{`
-        @keyframes slideInUp {
-          from {
-            opacity: 0;
-            transform: translateY(1rem);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+      </div>
     </div>
-  )
+  );
 }

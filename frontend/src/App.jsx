@@ -1,25 +1,103 @@
-import React from "react";
-import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import SignupPage from "./pages/SignupPage";
-import Dashboard from "./pages/Dashboard";
-import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Suspense, lazy, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { SocketProvider } from "./contexts/SocketContext";
 
-export default function App() {
+const Landing = lazy(() => import("./pages/Landing"));
+const Login = lazy(() => import("./pages/Login"));
+const SignupPage = lazy(() => import("./pages/SignupPage"));
+const VideoMeet = lazy(() => import("./pages/VideoMeet"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const History = lazy(() => import("./pages/History"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const AccountSettings = lazy(() => import("./pages/AccountSettings"));
+const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
+
+const RouteLoader = () => (
+  <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
+    <p className="text-sm font-medium text-white/60">Loading...</p>
+  </div>
+);
+
+
+function App() {
+  useEffect(() => {
+    let cancelled = false;
+    let timeoutId = null;
+    let idleId = null;
+
+    const prefetchCriticalRoutes = async () => {
+      if (cancelled) return;
+      await Promise.all([
+        import("./pages/Dashboard"),
+        import("./pages/VideoMeet"),
+      ]);
+    };
+
+    if ("requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(prefetchCriticalRoutes, {
+        timeout: 2000,
+      });
+    } else {
+      timeoutId = window.setTimeout(prefetchCriticalRoutes, 600);
+    }
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) window.clearTimeout(timeoutId);
+      if (idleId && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+    };
+  }, []);
+
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+    <Suspense fallback={<RouteLoader />}>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route
+          path="/videomeet"
+          element={
+            <ProtectedRoute>
+              <SocketProvider>
+                <VideoMeet />
+              </SocketProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <History />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account-settings"
+          element={
+            <ProtectedRoute>
+              <AccountSettings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
+
+export default App;

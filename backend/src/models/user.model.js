@@ -1,10 +1,6 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
   username: {
     type: String,
     required: true,
@@ -18,6 +14,22 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+  },
+  tokenVersion: {
+    type: Number,
+    default: 0,
+  },
+  resetPasswordOtpHash: {
+    type: String,
+    default: null,
+  },
+  resetPasswordOtpExpiresAt: {
+    type: Date,
+    default: null,
+  },
+  resetPasswordOtpVerified: {
+    type: Boolean,
+    default: false,
   },
   createdAt: {
     type: Date,

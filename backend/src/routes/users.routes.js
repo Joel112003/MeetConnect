@@ -1,11 +1,34 @@
 import { Router } from "express";
-import { registerUser , loginUser } from "../controllers/auth.controllers.js";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  requestPasswordResetOtp,
+  verifyPasswordResetOtp,
+  resetPasswordWithOtp,
+} from "../controllers/auth.controllers.js";
+import {
+  getUserHistory,
+  addMeetingToHistory,
+} from "../controllers/history.controllers.js";
+import { getMyProfileController } from "../controllers/account.controllers.js";
+import { authenticateToken } from "../middleware/auth.middleware.js";
+
 const router = Router();
 
-router.post("/register" , registerUser);
-router.post("/login" , loginUser);
-// router.post("/add_to_activity");
-// router.get("/get_all_activities");
-// router.post("/logout");
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.post("/forgot-password", requestPasswordResetOtp);
+router.post("/verify-reset-otp", verifyPasswordResetOtp);
+router.post("/reset-password", resetPasswordWithOtp);
+
+router.use(authenticateToken);
+
+router.get("/me", getMyProfileController);
+
+router.get("/history", getUserHistory);
+router.post("/history", addMeetingToHistory);
+
+router.post("/logout", logoutUser);
 
 export default router;

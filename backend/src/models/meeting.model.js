@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 
 const meetingSchema = new mongoose.Schema({
     user_id : {
-        type:String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
     },
     meetingCode : {
         type : String,
@@ -15,6 +17,8 @@ const meetingSchema = new mongoose.Schema({
     }
 
 });
+
+meetingSchema.index({ user_id: 1, date: -1 });
 
 const meetingModel = mongoose.model("Meeting", meetingSchema);
 
