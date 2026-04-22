@@ -17,6 +17,8 @@ const getUserResponse = (userDoc) => ({
 });
 
 const OTP_EXPIRY_MINUTES = 10;
+const LOGIN_MAX_FAILED_ATTEMPTS = 5;
+const LOGIN_BLOCK_WINDOW_MS = 15 * 60 * 1000;
 
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
@@ -80,8 +82,22 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body || {};
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const password = String(req.body?.password || "");
     const user = await userModel.findOne({ email });
+
+    if (user?.loginBlockedUntil && user.loginBlockedUntil > new Date()) {
+      return res.status(httpStatus.TOO_MANY_REQUESTS).json({
+        message: "Too many failed login attempts. Please try again after 15 minutes.",
+      });
+    }
+
+    if (user?.loginBlockedUntil && user.loginBlockedUntil <= new Date()) {
+      user.failedLoginAttempts = 0;
+      user.loginBlockedUntil = null;
+      await user.save();
+    }
+
     if (!user) {
       return res.status(httpStatus.BAD_REQUEST).json({
         message: "Invalid email or password",
@@ -90,10 +106,23 @@ export const loginUser = async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+
+      if (user.failedLoginAttempts >= LOGIN_MAX_FAILED_ATTEMPTS) {
+        user.loginBlockedUntil = new Date(Date.now() + LOGIN_BLOCK_WINDOW_MS);
+        user.failedLoginAttempts = 0;
+      }
+
+      await user.save();
+
       return res.status(httpStatus.BAD_REQUEST).json({
         message: "Invalid email or password",
       });
     }
+
+    user.failedLoginAttempts = 0;
+    user.loginBlockedUntil = null;
+    await user.save();
 
     const token = jwt.sign(
       { id: user._id, tokenVersion: user.tokenVersion || 0 },

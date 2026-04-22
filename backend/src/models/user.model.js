@@ -19,6 +19,14 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  failedLoginAttempts: {
+    type: Number,
+    default: 0,
+  },
+  loginBlockedUntil: {
+    type: Date,
+    default: null,
+  },
   resetPasswordOtpHash: {
     type: String,
     default: null,

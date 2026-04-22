@@ -13,11 +13,17 @@ import {
 } from "../controllers/history.controllers.js";
 import { getMyProfileController } from "../controllers/account.controllers.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
+import {
+  authLimiter,
+  loginIpLimiter,
+  loginEmailLimiter,
+} from "../middleware/rateLimiter.middleware.js";
 
 const router = Router();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+
+router.post("/register", authLimiter, registerUser);
+router.post("/login", loginIpLimiter, loginEmailLimiter, loginUser);
 router.post("/forgot-password", requestPasswordResetOtp);
 router.post("/verify-reset-otp", verifyPasswordResetOtp);
 router.post("/reset-password", resetPasswordWithOtp);

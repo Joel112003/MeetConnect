@@ -9,12 +9,18 @@ import { InitializeSocketIO } from "./src/controllers/SocketManager.js";
 import connectDB from "./src/config/db.js";
 import userRoutes from "./src/routes/users.routes.js";
 import accountRoutes from "./src/routes/account.routes.js";
+import { globalLimiter } from "./src/middleware/rateLimiter.middleware.js";
 
 const app = express();
 const httpServer = createServer(app);
 const io = InitializeSocketIO(httpServer);
 
+if (process.env.TRUST_PROXY === "true") {
+  app.set("trust proxy", 1);
+}
+
 // Middleware
+app.use(globalLimiter); // Apply global rate limiter to all routes in this router
 app.use(cookieParser());
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb" }));

@@ -1,5 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useState, useEffect } from "react";
+import  { createContext, useState, useEffect } from "react";
 import { api } from "../services/api";
 
 export const AuthContext = createContext();
@@ -126,7 +125,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true, data };
     } catch (err) {
       setError(err.message);
-      return { success: false, error: err.message };
+      return { success: false, error: err.message, status: err.status };
     } finally {
       setLoading(false);
     }
