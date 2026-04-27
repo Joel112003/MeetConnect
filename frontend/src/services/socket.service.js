@@ -1,9 +1,9 @@
 
-export const joinCall = (socket) => {
+export const joinCall = (socket, username) => {
   const params = new URLSearchParams(window.location.search);
   const code = (params.get("code") || "").trim().toUpperCase();
   const roomKey = code ? `meeting:${code}` : `${window.location.pathname}${window.location.search}`;
-  socket.emit("join-call", roomKey);
+  socket.emit("join-call", { path: roomKey, username });
 };
 
 

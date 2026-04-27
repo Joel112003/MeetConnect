@@ -22,7 +22,7 @@ const formatDate = (value) => {
 
 export default function Dashboard() {
 	const navigate = useNavigate();
-	const { user, logout, getHistoryOfUser, addMeetingToHistory } = useAuth();
+	const { user, logout, getHistoryOfUser } = useAuth();
 
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
 	const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -80,18 +80,10 @@ export default function Dashboard() {
 
 	const handleCreateMeeting = async () => {
 		const code = generateMeetingCode();
-		try {
-			await addMeetingToHistory(code);
-		} catch {
-		}
 		navigate(`/videomeet?code=${code}`);
 	};
 
-	const handleJoinMeeting = async (code) => {
-		try {
-			await addMeetingToHistory(code);
-		} catch {
-		}
+	const handleJoinMeeting = (code) => {
 		setIsJoinModalOpen(false);
 		navigate(`/videomeet?code=${code}`);
 	};

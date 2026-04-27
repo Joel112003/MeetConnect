@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import httpStatus from "http-status";
 import userModel from "../models/user.model.js";
+import { sendError } from "../utils/responses.js";
 
 export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers.authorization || "";
@@ -10,34 +11,34 @@ export const authenticateToken = async (req, res, next) => {
   const token = req.cookies?.token || bearerToken;
 
   if (!token) {
-    return res
-      .status(httpStatus.UNAUTHORIZED)
-      .json({ message: "Access denied. No token provided." });
+    return sendError(
+      res,
+      httpStatus.UNAUTHORIZED,
+      "Access denied. No token provided.",
+    );
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await userModel.findById(decoded.id).select("_id tokenVersion");
     if (!user) {
-      return res
-        .status(httpStatus.UNAUTHORIZED)
-        .json({ message: "Invalid token." });
+      return sendError(res, httpStatus.UNAUTHORIZED, "Invalid token.");
     }
 
     const tokenVersion = Number(decoded.tokenVersion || 0);
     const userTokenVersion = Number(user.tokenVersion || 0);
     if (tokenVersion !== userTokenVersion) {
-      return res
-        .status(httpStatus.UNAUTHORIZED)
-        .json({ message: "Session expired. Please login again." });
+      return sendError(
+        res,
+        httpStatus.UNAUTHORIZED,
+        "Session expired. Please login again.",
+      );
     }
 
     req.user = decoded;
     next();
   } catch (err) {
     console.error("Token verification failed:", err.message);
-    res
-      .status(httpStatus.UNAUTHORIZED)
-      .json({ message: "Invalid token." });
+    return sendError(res, httpStatus.UNAUTHORIZED, "Invalid token.");
   }
 };

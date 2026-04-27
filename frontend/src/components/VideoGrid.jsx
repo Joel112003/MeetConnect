@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { AppIcon } from "../assets/icons/AppIcons";
 
-const VideoTile = ({ socketId, stream }) => {
+const VideoTile = ({ socketId, stream, displayName }) => {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -16,7 +16,7 @@ const VideoTile = ({ socketId, stream }) => {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/85 to-transparent" />
       <div className="absolute bottom-2.5 left-3 flex items-center gap-1.5">
         <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(74,222,128,0.9)]" />
-        <span className="text-xs font-medium tracking-[0.08em] text-white/90">{socketId.slice(0, 8).toUpperCase()}</span>
+        <span className="text-xs font-medium tracking-[0.08em] text-white/90">{displayName || socketId.slice(0, 8).toUpperCase()}</span>
       </div>
     </article>
   );
@@ -65,7 +65,12 @@ const VideoGrid = ({ remoteVideos, localStream }) => {
   return (
     <div className={`grid flex-1 content-center gap-2 overflow-y-auto p-3 ${columns}`}>
       {remoteVideos.map((video) => (
-        <VideoTile key={video.socketId} socketId={video.socketId} stream={video.stream} />
+        <VideoTile
+          key={video.socketId}
+          socketId={video.socketId}
+          stream={video.stream}
+          displayName={video.displayName}
+        />
       ))}
     </div>
   );

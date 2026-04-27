@@ -45,7 +45,7 @@ const Timer = () => {
   );
 };
 
-const CircleButton = ({ onClick, title, active = true, danger = false, highlight = false, iconName }) => {
+const CircleButton = ({ onClick, title, active = true, danger = false, highlight = false, iconName, children }) => {
   const base = danger
     ? "bg-rose-600 text-white hover:bg-rose-500"
     : active
@@ -59,7 +59,7 @@ const CircleButton = ({ onClick, title, active = true, danger = false, highlight
         className={`relative flex h-11 w-11 items-center justify-center rounded-full transition ${base} ${highlight ? "ring-2 ring-blue-500/70" : ""}`}
         aria-label={title}
       >
-        <AppIcon name={iconName} size={18} />
+        {children || <AppIcon name={iconName} size={18} />}
         {!active && !danger ? (
           <span className="pointer-events-none absolute inset-[-1px] rounded-full border border-rose-400/60" />
         ) : null}
@@ -74,11 +74,13 @@ const Controls = ({
   screenSharing,
   screenAvailable,
   chatOpen,
+  emojiOpen,
   unreadCount,
   onToggleVideo,
   onToggleAudio,
   onToggleScreen,
   onToggleChat,
+  onToggleEmoji,
   onEndCall,
 }) => {
   return (
@@ -126,6 +128,15 @@ const Controls = ({
             </span>
           ) : null}
         </div>
+
+        <CircleButton
+          onClick={onToggleEmoji}
+          active
+          highlight={emojiOpen}
+          title="Reactions"
+        >
+          <span className="text-lg leading-none">😊</span>
+        </CircleButton>
 
         <span className="mx-1 h-6 w-px bg-white/10" />
 

@@ -1,13 +1,7 @@
 import bcrypt from "bcrypt";
 import userModel from "../models/user.model.js";
 import { sendSecurityNotificationEmail } from "./email.service.js";
-
-const sanitizeUser = (userDoc) => ({
-  _id: userDoc._id,
-  username: userDoc.username,
-  email: userDoc.email,
-  createdAt: userDoc.createdAt,
-});
+import { toPublicUser } from "../utils/userMapper.js";
 
 export const updateProfileService = async (userId, payload) => {
   const user = await userModel.findById(userId);
@@ -58,7 +52,7 @@ export const updateProfileService = async (userId, payload) => {
   }
 
   await user.save();
-  return sanitizeUser(user);
+  return toPublicUser(user);
 };
 
 export const changePasswordService = async (userId, currentPassword, newPassword) => {
@@ -97,7 +91,7 @@ export const getAccountSecurityInfoService = async (userId) => {
     throw new Error("User not found");
   }
 
-  return sanitizeUser(user);
+  return toPublicUser(user);
 };
 
 export const logoutAllDevicesService = async (userId) => {

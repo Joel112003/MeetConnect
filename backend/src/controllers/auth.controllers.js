@@ -1,20 +1,16 @@
 import bcrypt from "bcrypt";
 import userModel from "../models/user.model.js";
-import jwt from "jsonwebtoken";
 import httpStatus from "http-status";
 import { sendOtpEmail } from "../services/email.service.js";
-
-const getCookieOptions = () => ({
-  httpOnly: true,
-  sameSite: "lax",
-  secure: process.env.NODE_ENV === "production",
-});
-
-const getUserResponse = (userDoc) => ({
-  _id: userDoc._id,
-  username: userDoc.username,
-  email: userDoc.email,
-});
+import { OAuth2Client } from "google-auth-library";
+import { randomBytes } from "crypto";
+import {
+  signAppToken,
+  attachAuthCookie,
+  clearAuthCookie,
+} from "../utils/authToken.js";
+import { toPublicUser } from "../utils/userMapper.js";
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const OTP_EXPIRY_MINUTES = 10;
 const LOGIN_MAX_FAILED_ATTEMPTS = 5;
@@ -54,17 +50,10 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
     });
 
-    const token = jwt.sign(
-      { id: newUser._id, tokenVersion: newUser.tokenVersion || 0 },
-      process.env.JWT_SECRET,
-      {
-      expiresIn: "1h",
-      },
-    );
+    const token = signAppToken(newUser);
+    attachAuthCookie(res, token);
 
-    res.cookie("token", token, getCookieOptions());
-
-    const userResponse = getUserResponse(newUser);
+    const userResponse = toPublicUser(newUser);
 
     res.status(httpStatus.CREATED).json({
       message: "User registered successfully",
@@ -82,13 +71,16 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
-    const email = String(req.body?.email || "").trim().toLowerCase();
+    const email = String(req.body?.email || "")
+      .trim()
+      .toLowerCase();
     const password = String(req.body?.password || "");
     const user = await userModel.findOne({ email });
 
     if (user?.loginBlockedUntil && user.loginBlockedUntil > new Date()) {
       return res.status(httpStatus.TOO_MANY_REQUESTS).json({
-        message: "Too many failed login attempts. Please try again after 15 minutes.",
+        message:
+          "Too many failed login attempts. Please try again after 15 minutes.",
       });
     }
 
@@ -124,20 +116,10 @@ export const loginUser = async (req, res) => {
     user.loginBlockedUntil = null;
     await user.save();
 
-    const token = jwt.sign(
-      { id: user._id, tokenVersion: user.tokenVersion || 0 },
-      process.env.JWT_SECRET,
-      {
-      expiresIn: "1h",
-      },
-    );
+    const token = signAppToken(user);
+    attachAuthCookie(res, token);
 
-    res.cookie("token", token, {
-      ...getCookieOptions(),
-      maxAge: 3600000,
-    });
-
-    const userResponse = getUserResponse(user);
+    const userResponse = toPublicUser(user);
 
     res.status(httpStatus.OK).json({
       message: "User logged in successfully",
@@ -155,7 +137,7 @@ export const loginUser = async (req, res) => {
 
 export const logoutUser = async (req, res) => {
   try {
-    res.clearCookie("token", getCookieOptions());
+    clearAuthCookie(res);
     res.status(httpStatus.OK).json({
       message: "User logged out successfully",
     });
@@ -233,7 +215,11 @@ export const verifyPasswordResetOtp = async (req, res) => {
     }
 
     const user = await userModel.findOne({ email });
-    if (!user || !user.resetPasswordOtpHash || !user.resetPasswordOtpExpiresAt) {
+    if (
+      !user ||
+      !user.resetPasswordOtpHash ||
+      !user.resetPasswordOtpExpiresAt
+    ) {
       return res.status(httpStatus.BAD_REQUEST).json({
         message: "Invalid or expired OTP",
       });
@@ -326,5 +312,119 @@ export const resetPasswordWithOtp = async (req, res) => {
     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
       message: "Failed to reset password",
     });
+  }
+};
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential)
+      return res.status(400).json({ message: "No credential provided" });
+
+    // 1. Verify with Google (supports both ID token and access token flows)
+    let payload = null;
+    const isIdToken = typeof credential === "string" && credential.split(".").length === 3;
+
+    if (isIdToken) {
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } else {
+      const tokenInfoResponse = await fetch(
+        `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${encodeURIComponent(credential)}`,
+      );
+      if (!tokenInfoResponse.ok) {
+        return res.status(401).json({ message: "Invalid Google token" });
+      }
+      const tokenInfo = await tokenInfoResponse.json();
+
+      if (tokenInfo.aud !== process.env.GOOGLE_CLIENT_ID) {
+        return res.status(401).json({ message: "Invalid Google audience" });
+      }
+
+      const userInfoResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+        headers: {
+          Authorization: `Bearer ${credential}`,
+        },
+      });
+
+      if (!userInfoResponse.ok) {
+        return res.status(401).json({ message: "Failed to fetch Google user profile" });
+      }
+
+      const userInfo = await userInfoResponse.json();
+
+      payload = {
+        sub: userInfo.sub || tokenInfo.sub || tokenInfo.user_id,
+        email: userInfo.email || tokenInfo.email,
+        email_verified:
+          userInfo.email_verified === true ||
+          tokenInfo.email_verified === "true" ||
+          tokenInfo.email_verified === true,
+        name: userInfo.name || tokenInfo.name,
+        iss: tokenInfo.iss,
+      };
+    }
+
+    // 2. Security checks
+    if (!payload.email_verified)
+      return res.status(401).json({ message: "Email not verified by Google" });
+
+    if (
+      isIdToken &&
+      !["accounts.google.com", "https://accounts.google.com"].includes(
+        payload.iss,
+      )
+    )
+      return res.status(401).json({ message: "Invalid token issuer" });
+
+    const { sub: googleId, email, name } = payload;
+    if (!email) {
+      return res.status(400).json({ message: "Google account email is missing" });
+    }
+
+    // 3. Find or create user
+    let user = await userModel.findOne({ email });
+
+    if (!user) {
+      const baseUsername = (name || email.split("@")[0] || "user").trim();
+      let username = baseUsername;
+      let suffix = 1;
+      while (await userModel.exists({ username })) {
+        suffix += 1;
+        username = `${baseUsername}${suffix}`;
+      }
+
+      const randomPassword = randomBytes(24).toString("hex");
+      const password = await bcrypt.hash(randomPassword, 10);
+
+      user = await userModel.create({
+        username,
+        email,
+        password,
+        googleId,
+        authProvider: "google",
+      });
+    } else if (!user.googleId) {
+      // Existing local user — link Google account
+      user.googleId = googleId;
+      user.authProvider = "google";
+      await user.save();
+    }
+
+    // 4. Issue your own JWT
+    const token = signAppToken(user);
+    attachAuthCookie(res, token);
+
+    res.json({
+      message: "Google login successful",
+      token,
+      user: toPublicUser(user),
+    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    res.status(401).json({ message: "Invalid Google token" });
   }
 };

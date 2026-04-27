@@ -6,6 +6,7 @@ import {
   requestPasswordResetOtp,
   verifyPasswordResetOtp,
   resetPasswordWithOtp,
+  googleLogin
 } from "../controllers/auth.controllers.js";
 import {
   getUserHistory,
@@ -27,6 +28,8 @@ router.post("/login", loginIpLimiter, loginEmailLimiter, loginUser);
 router.post("/forgot-password", requestPasswordResetOtp);
 router.post("/verify-reset-otp", verifyPasswordResetOtp);
 router.post("/reset-password", resetPasswordWithOtp);
+router.post("/google-login", googleLogin);
+
 
 router.use(authenticateToken);
 

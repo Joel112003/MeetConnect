@@ -4,6 +4,7 @@ const rooms = new Map();
 const messages = new Map();
 const socketJoinTime = new Map();
 const socketToRoom = new Map();
+const socketToName = new Map();
 
 export function InitializeSocketIO(httpServer) {
   const io = new Server(httpServer, {
@@ -18,7 +19,13 @@ export function InitializeSocketIO(httpServer) {
   io.on("connection", (socket) => {
     console.log(`[socket] connected: ${socket.id}`);
 
-    socket.on("join-call", (path) => {
+    socket.on("join-call", (payload) => {
+      const path = typeof payload === "string" ? payload : payload?.path;
+      const username =
+        typeof payload === "object" && typeof payload?.username === "string"
+          ? payload.username.trim()
+          : "";
+
       if (typeof path !== "string" || !path.trim()) {
         console.warn(`[join-call] invalid path from ${socket.id}`);
         return;
@@ -37,11 +44,21 @@ export function InitializeSocketIO(httpServer) {
       const room = rooms.get(path);
       room.add(socket.id);
       socketToRoom.set(socket.id, path);
+      socketToName.set(socket.id, username || "Guest");
       socketJoinTime.set(socket.id, new Date());
 
       const roomList = [...room];
+      const participants = roomList.map((id) => ({
+        id,
+        name: socketToName.get(id) || "Guest",
+      }));
+
       for (const id of room) {
-        io.to(id).emit("user-joined", socket.id, roomList);
+        io.to(id).emit("user-joined", {
+          id: socket.id,
+          name: socketToName.get(socket.id) || "Guest",
+          clients: participants,
+        });
       }
 
       const history = messages.get(path) ?? [];
@@ -69,13 +86,37 @@ export function InitializeSocketIO(httpServer) {
         return;
       }
 
-      messages.get(path).push({ data: data.trim(), sender, socketId: socket.id });
+      messages
+        .get(path)
+        .push({ data: data.trim(), sender, socketId: socket.id });
       console.log(`[chat-message] room="${path}" sender="${sender}":`, data);
 
       const room = rooms.get(path);
       if (room) {
         for (const id of room) {
           io.to(id).emit("chat-message", data, sender, socket.id);
+        }
+      }
+    });
+
+    socket.on("send-emoji", (payload) => {
+      const path = socketToRoom.get(socket.id);
+      if (!path) return;
+
+      const emoji = typeof payload?.emoji === "string" ? payload.emoji : "";
+      const senderName =
+        typeof payload?.senderName === "string" && payload.senderName.trim()
+          ? payload.senderName.trim()
+          : "Guest";
+
+      if (!emoji.trim()) return;
+
+      const room = rooms.get(path);
+      if (!room) return;
+
+      for (const id of room) {
+        if (id !== socket.id) {
+          io.to(id).emit("receive-emoji", { emoji, senderName });
         }
       }
     });
@@ -89,8 +130,14 @@ export function InitializeSocketIO(httpServer) {
         if (room) {
           for (const id of room) {
             if (id !== socket.id) {
-              io.to(id).emit("user-left", socket.id);
-              io.to(id).emit("user-disconnected", socket.id);
+              io.to(id).emit("user-left", {
+                id: socket.id,
+                name: socketToName.get(socket.id) || "Guest",
+              });
+              io.to(id).emit("user-disconnected", {
+                id: socket.id,
+                name: socketToName.get(socket.id) || "Guest",
+              });
             }
           }
 
@@ -106,6 +153,7 @@ export function InitializeSocketIO(httpServer) {
       }
 
       const joinTime = socketJoinTime.get(socket.id);
+      socketToName.delete(socket.id);
       if (joinTime) {
         const seconds = ((Date.now() - joinTime.getTime()) / 1000).toFixed(1);
         console.log(`[socket] disconnected: ${socket.id} (online ${seconds}s)`);

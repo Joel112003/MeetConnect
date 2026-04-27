@@ -15,9 +15,14 @@ const useWebRTC = ({
 }) => {
   const connectionsRef = useRef({});
   const remoteStreamsRef = useRef({});
+  const peerNamesRef = useRef({});
 
   const [remoteVideos, setRemoteVideos] = useState([]);
   const remoteVideosRef = useRef([]);
+
+  const getPeerName = useCallback((peerId) => {
+    return peerNamesRef.current[peerId] || peerId?.slice(0, 8)?.toUpperCase() || "Guest";
+  }, []);
 
   const getLocalStream = useCallback(() => {
     if (localStreamRef.current) return localStreamRef.current;
@@ -25,21 +30,22 @@ const useWebRTC = ({
   }, [localStreamRef]);
 
   const upsertRemoteVideo = useCallback((peerId, stream) => {
+    const displayName = getPeerName(peerId);
     setRemoteVideos((prev) => {
       const idx = prev.findIndex((v) => v.socketId === peerId);
       if (idx !== -1) {
         const updated = prev.map((v) =>
-          v.socketId === peerId ? { ...v, stream } : v,
+          v.socketId === peerId ? { ...v, stream, displayName } : v,
         );
         remoteVideosRef.current = updated;
         return updated;
       }
 
-      const updated = [...prev, { socketId: peerId, stream }];
+      const updated = [...prev, { socketId: peerId, stream, displayName }];
       remoteVideosRef.current = updated;
       return updated;
     });
-  }, []);
+  }, [getPeerName]);
 
   const addLocalTracksToPeer = useCallback(
     (pc) => {
@@ -111,53 +117,78 @@ const useWebRTC = ({
   }, [socket, upsertRemoteVideo]);
 
   const handleUserJoined = useCallback(
-  (id, clients) => {
-    const myId = socket.id;
+    (payloadOrId, legacyClients) => {
+      const myId = socket.id;
 
-    if (id !== myId) {
-      onParticipantJoined?.(id);
-    }
+      const joinedId = typeof payloadOrId === "object" ? payloadOrId?.id : payloadOrId;
+      const joinedName = typeof payloadOrId === "object" ? payloadOrId?.name : undefined;
 
-    clients.forEach((peerId) => {
-      if (peerId === myId) return;
-      if (connectionsRef.current[peerId]) return;
+      const participants = typeof payloadOrId === "object"
+        ? payloadOrId?.clients || []
+        : (legacyClients || []).map((id) => ({ id }));
 
-      const pc = createPeerConnection(peerId);
-      connectionsRef.current[peerId] = pc;
-      addLocalTracksToPeer(pc);
-    });
-
-    if (id === myId) {
-      Object.entries(connectionsRef.current).forEach(([peerId, pc]) => {
-        if (peerId === myId) return;
-
-        pc.createOffer()
-          .then((offer) => pc.setLocalDescription(offer))
-          .then(() => {
-            sendSignal(socket, peerId, {
-              sdp: connectionsRef.current[peerId].localDescription,
-            });
-          })
-          .catch((err) => console.error("[WebRTC] Offer error:", err));
+      participants.forEach((participant) => {
+        if (!participant?.id) return;
+        peerNamesRef.current[participant.id] = participant.name || getPeerName(participant.id);
       });
-    }
-  },
-  [socket, createPeerConnection, addLocalTracksToPeer, onParticipantJoined],
-);
 
-  const handleUserLeft = useCallback((peerId) => {
-  onParticipantLeft?.(peerId);
-  if (connectionsRef.current[peerId]) {
-    connectionsRef.current[peerId].close();
-    delete connectionsRef.current[peerId];
-  }
-  delete remoteStreamsRef.current[peerId];
-  setRemoteVideos((prev) => {
-    const updated = prev.filter((v) => v.socketId !== peerId);
-    remoteVideosRef.current = updated;
-    return updated;
-  });
-}, [onParticipantLeft]);
+      if (joinedId) {
+        peerNamesRef.current[joinedId] = joinedName || getPeerName(joinedId);
+      }
+
+      if (joinedId !== myId && joinedId) {
+        onParticipantJoined?.(joinedId, peerNamesRef.current[joinedId] || "Guest");
+      }
+
+      participants.forEach(({ id: peerId }) => {
+        if (!peerId || peerId === myId) return;
+        if (connectionsRef.current[peerId]) return;
+
+        const pc = createPeerConnection(peerId);
+        connectionsRef.current[peerId] = pc;
+        addLocalTracksToPeer(pc);
+      });
+
+      if (joinedId === myId) {
+        Object.entries(connectionsRef.current).forEach(([peerId, pc]) => {
+          if (peerId === myId) return;
+
+          pc.createOffer()
+            .then((offer) => pc.setLocalDescription(offer))
+            .then(() => {
+              sendSignal(socket, peerId, {
+                sdp: connectionsRef.current[peerId].localDescription,
+              });
+            })
+            .catch((err) => console.error("[WebRTC] Offer error:", err));
+        });
+      }
+    },
+    [socket, createPeerConnection, addLocalTracksToPeer, onParticipantJoined, getPeerName],
+  );
+
+  const handleUserLeft = useCallback((payloadOrId) => {
+    const peerId = typeof payloadOrId === "object" ? payloadOrId?.id : payloadOrId;
+    const peerName =
+      (typeof payloadOrId === "object" ? payloadOrId?.name : undefined) ||
+      peerNamesRef.current[peerId] ||
+      "Guest";
+
+    if (!peerId) return;
+
+    onParticipantLeft?.(peerId, peerName);
+    if (connectionsRef.current[peerId]) {
+      connectionsRef.current[peerId].close();
+      delete connectionsRef.current[peerId];
+    }
+    delete remoteStreamsRef.current[peerId];
+    delete peerNamesRef.current[peerId];
+    setRemoteVideos((prev) => {
+      const updated = prev.filter((v) => v.socketId !== peerId);
+      remoteVideosRef.current = updated;
+      return updated;
+    });
+  }, [onParticipantLeft]);
 
   const handleSignal = useCallback(
   async (fromId, rawMessage) => {
@@ -195,14 +226,14 @@ const useWebRTC = ({
 );
 
   const joinRoom = useCallback(
-  (onChatMessage) => {
+  (onChatMessage, username) => {
     const cleanup = registerSocketEvents(socket, {
       onSignal: handleSignal,
       onUserJoined: handleUserJoined,
       onUserLeft: handleUserLeft,
       onChatMessage,
     });
-    joinCall(socket);
+    joinCall(socket, username);
     return cleanup;
   },
   [socket, handleSignal, handleUserJoined, handleUserLeft],
@@ -228,6 +259,7 @@ const useWebRTC = ({
   Object.values(connectionsRef.current).forEach((pc) => pc.close());
   connectionsRef.current = {};
   remoteStreamsRef.current = {};
+  peerNamesRef.current = {};
     setRemoteVideos([]);
     remoteVideosRef.current = [];
 }, []);

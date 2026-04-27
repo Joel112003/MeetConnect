@@ -4,19 +4,17 @@ import {
   getAccountSecurityInfoService,
   logoutAllDevicesService,
 } from "../services/account.service.js";
-
-const getCookieOptions = () => ({
-  httpOnly: true,
-  sameSite: "lax",
-  secure: process.env.NODE_ENV === "production",
-});
+import httpStatus from "http-status";
+import { clearAuthCookie } from "../utils/authToken.js";
 
 export const getMyProfileController = async (req, res) => {
   try {
     const user = await getAccountSecurityInfoService(req.user.id);
-    return res.status(200).json({ success: true, user });
+    return res.status(httpStatus.OK).json({ success: true, user });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
   }
 };
 
@@ -26,7 +24,7 @@ export const updateProfileController = async (req, res) => {
 
     if (!username && !email) {
       return res
-        .status(400)
+        .status(httpStatus.BAD_REQUEST)
         .json({ success: false, message: "No profile fields provided" });
     }
 
@@ -35,13 +33,15 @@ export const updateProfileController = async (req, res) => {
       email,
     });
 
-    return res.status(200).json({
+    return res.status(httpStatus.OK).json({
       success: true,
       message: "Profile updated successfully",
       user,
     });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
   }
 };
 
@@ -50,28 +50,28 @@ export const changePasswordController = async (req, res) => {
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         success: false,
         message: "All password fields are required",
       });
     }
 
     if (newPassword.length < 6) {
-      return res.status(400).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         success: false,
         message: "New password must be at least 6 characters long",
       });
     }
 
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         success: false,
         message: "New password and confirm password do not match",
       });
     }
 
     if (currentPassword === newPassword) {
-      return res.status(400).json({
+      return res.status(httpStatus.BAD_REQUEST).json({
         success: false,
         message: "New password must be different from current password",
       });
@@ -83,18 +83,22 @@ export const changePasswordController = async (req, res) => {
       newPassword,
     );
 
-    return res.status(200).json({ success: true, ...result });
+    return res.status(httpStatus.OK).json({ success: true, ...result });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
   }
 };
 
 export const logoutAllDevicesController = async (req, res) => {
   try {
     const result = await logoutAllDevicesService(req.user.id);
-    res.clearCookie("token", getCookieOptions());
-    return res.status(200).json({ success: true, ...result });
+    clearAuthCookie(res);
+    return res.status(httpStatus.OK).json({ success: true, ...result });
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    return res
+      .status(httpStatus.BAD_REQUEST)
+      .json({ success: false, message: error.message });
   }
 };

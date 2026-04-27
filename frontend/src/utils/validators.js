@@ -12,6 +12,8 @@ export const validateEmail = (email) => {
   return { isValid: true, error: '' }
 }
 
+export const normalizeEmail = (email) => String(email || "").trim().toLowerCase()
+
 export const validatePassword = (password, minLength = 6) => {
   if (!password) {
     return { isValid: false, error: 'Password is required' }
@@ -68,6 +70,37 @@ export const validateSignupForm = (credentials) => {
 
   if (password !== confirmPassword) {
     errors.confirmPassword = 'Passwords do not match'
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+  }
+}
+
+export const validateOtp = (otp) => {
+  const normalizedOtp = String(otp || "").trim()
+  if (!normalizedOtp) {
+    return { isValid: false, error: "OTP is required" }
+  }
+  if (!/^\d{6}$/.test(normalizedOtp)) {
+    return { isValid: false, error: "OTP must be a 6-digit code" }
+  }
+  return { isValid: true, error: "" }
+}
+
+export const validateResetPasswordForm = ({ newPassword, confirmPassword }) => {
+  const errors = {}
+
+  const passwordValidation = validatePassword(newPassword)
+  if (!passwordValidation.isValid) {
+    errors.newPassword = passwordValidation.error
+  }
+
+  if (!confirmPassword) {
+    errors.confirmPassword = "Confirm password is required"
+  } else if (newPassword !== confirmPassword) {
+    errors.confirmPassword = "Passwords do not match"
   }
 
   return {

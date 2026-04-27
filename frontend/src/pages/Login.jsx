@@ -4,6 +4,7 @@ import { validateLoginForm, formatValidationError } from "../utils/validators";
 import { useAuth } from "../hooks/useAuth";
 import { AppIcon } from "../assets/icons/AppIcons";
 import meetConnectLogo from "../assets/images/MeetConnect.png";
+import { useGoogleLogin } from "@react-oauth/google";
 
 function Field({
   label,
@@ -43,7 +44,7 @@ function Field({
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, loading: authLoading } = useAuth();
+  const { login, googleLogin, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -71,6 +72,29 @@ export default function Login() {
       setError(err.message || "An error occurred during login");
     }
   };
+
+  const handleGoogleSuccess = async (response) => {
+    const googleToken = response?.credential || response?.access_token;
+    if (!googleToken) {
+      setError("Google sign-in failed");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+    const result = await googleLogin(googleToken);
+    if (result.success) {
+      setSuccess("Google login successful! Redirecting...");
+      setTimeout(() => navigate("/dashboard"), 300);
+    } else {
+      setError(result.error || "Google login failed");
+    }
+  };
+
+  const triggerGoogle = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: () => setError("Google sign-in failed"),
+  });
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 px-4 py-8">
@@ -216,11 +240,11 @@ export default function Login() {
               <div className="h-px flex-1 bg-white/10" />
             </div>
 
-            {/* Google Sign In */}
             <button
               type="button"
+              onClick={() => triggerGoogle()}
               disabled={authLoading}
-              className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="mb-5 flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
                 <path

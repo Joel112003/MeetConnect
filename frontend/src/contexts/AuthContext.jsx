@@ -1,18 +1,13 @@
-import  { createContext, useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "../services/api";
-
-export const AuthContext = createContext();
-
-const USER_CACHE_KEY = "userProfile";
-
-const readCachedUser = () => {
-  try {
-    const raw = localStorage.getItem(USER_CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
+import { AuthContext } from "./AuthContextValue";
+import {
+  readCachedUser,
+  getStoredToken,
+  setStoredToken,
+  setCachedUser,
+  clearAuthStorage,
+} from "../utils/authStorage";
 
 const decodeTokenPayload = (token) => {
   if (!token) return null;
@@ -22,7 +17,10 @@ const decodeTokenPayload = (token) => {
     if (parts.length < 2) return null;
 
     const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+    const padded = base64.padEnd(
+      base64.length + ((4 - (base64.length % 4)) % 4),
+      "=",
+    );
     const decoded = atob(padded);
     return JSON.parse(decoded);
   } catch {
@@ -34,7 +32,12 @@ const normalizeUser = (payload, token) => {
   const tokenClaims = decodeTokenPayload(token);
 
   const raw =
-    payload?.user || payload?.data?.user || payload?.data || payload || tokenClaims || null;
+    payload?.user ||
+    payload?.data?.user ||
+    payload?.data ||
+    payload ||
+    tokenClaims ||
+    null;
 
   if (!raw || typeof raw !== "object") return null;
 
@@ -56,7 +59,8 @@ const normalizeUser = (payload, token) => {
 
   return {
     ...raw,
-    username: raw.username || raw.userName || raw.preferred_username || displayName,
+    username:
+      raw.username || raw.userName || raw.preferred_username || displayName,
     name: raw.name || raw.displayName || displayName,
     email: raw.email || raw.upn || "",
   };
@@ -65,29 +69,29 @@ const normalizeUser = (payload, token) => {
 const setUserWithCache = (setUser, payload, token) => {
   const normalized = normalizeUser(payload, token);
   setUser(normalized);
-  if (normalized) {
-    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(normalized));
-  }
+  setCachedUser(normalized);
+};
+
+const clearUserSession = (setUser, setToken, setError) => {
+  clearAuthStorage();
+  setToken(null);
+  setUser(null);
+  setError(null);
+};
+
+const applyAuthSuccess = ({ data, setToken, setUser }) => {
+  setStoredToken(data.token);
+  setToken(data.token);
+  setUserWithCache(setUser, data, data.token);
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(readCachedUser);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = useState(getStoredToken());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (token) {
-      if (!user) {
-        setUserWithCache(setUser, null, token);
-      }
-      fetchUser();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
-
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       const data = await api.getCurrentUser();
       setUserWithCache(setUser, data, token);
@@ -96,15 +100,25 @@ export const AuthProvider = ({ children }) => {
       console.error("Failed to fetch user:", err);
       setError(err.message);
       if (err.status === 401) {
-        setUser(null);
-        localStorage.removeItem("token");
-        localStorage.removeItem(USER_CACHE_KEY);
-        setToken(null);
+        clearUserSession(setUser, setToken, setError);
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    if (!user) {
+      setUserWithCache(setUser, null, token);
+    }
+
+    fetchUser();
+  }, [token, user, fetchUser]);
 
   const refreshUser = async () => {
     await fetchUser();
@@ -119,9 +133,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const data = await api.login(email, password);
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
-      setUserWithCache(setUser, data, data.token);
+      applyAuthSuccess({ data, setToken, setUser });
       return { success: true, data };
     } catch (err) {
       setError(err.message);
@@ -136,9 +148,22 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const data = await api.signup(username, email, password);
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
-      setUserWithCache(setUser, data, data.token);
+      applyAuthSuccess({ data, setToken, setUser });
+      return { success: true, data };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const googleLogin = async (token) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.googleLogin(token);
+      applyAuthSuccess({ data, setToken, setUser });
       return { success: true, data };
     } catch (err) {
       setError(err.message);
@@ -154,11 +179,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem(USER_CACHE_KEY);
-      setToken(null);
-      setUser(null);
-      setError(null);
+      clearUserSession(setUser, setToken, setError);
     }
   };
 
@@ -184,6 +205,7 @@ export const AuthProvider = ({ children }) => {
         error,
         login,
         signup,
+        googleLogin,
         logout,
         refreshUser,
         updateUserInContext,

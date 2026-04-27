@@ -2,6 +2,13 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppIcon } from "../assets/icons/AppIcons";
 import { api } from "../services/api";
+import {
+  formatValidationError,
+  normalizeEmail,
+  validateEmail,
+  validateOtp,
+  validateResetPasswordForm,
+} from "../utils/validators";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -28,9 +35,11 @@ export default function ForgotPassword() {
   const handleRequestOtp = async (e) => {
     e.preventDefault();
     resetMessages();
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail) {
-      setError("Email is required");
+
+    const normalizedEmail = normalizeEmail(email);
+    const emailValidation = validateEmail(normalizedEmail);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error);
       return;
     }
 
@@ -51,8 +60,9 @@ export default function ForgotPassword() {
     e.preventDefault();
     resetMessages();
 
-    if (!otp.trim()) {
-      setError("OTP is required");
+    const otpValidation = validateOtp(otp);
+    if (!otpValidation.isValid) {
+      setError(otpValidation.error);
       return;
     }
 
@@ -72,18 +82,12 @@ export default function ForgotPassword() {
     e.preventDefault();
     resetMessages();
 
-    if (!newPassword || !confirmPassword) {
-      setError("Both password fields are required");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+    const validation = validateResetPasswordForm({
+      newPassword,
+      confirmPassword,
+    });
+    if (!validation.isValid) {
+      setError(formatValidationError(validation.errors));
       return;
     }
 
