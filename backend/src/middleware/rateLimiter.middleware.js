@@ -54,10 +54,12 @@ export const authLimiter = rateLimit({
 
 export const globalLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 100,
+  max: 180,
   keyGenerator: (req) => ipKeyGenerator(req.ip),
   store: createRedisStore("rl:global:"),
   standardHeaders: true,
   legacyHeaders: false,
   passOnStoreError: false,
+  skip: (req) =>
+    req.method === "OPTIONS" || req.path === "/api/v1/meetings/google/callback",
 });

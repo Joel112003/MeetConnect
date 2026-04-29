@@ -36,10 +36,9 @@ function HistorySkeletonRow() {
   );
 }
 
-function MeetingCard({ item, index, onRejoin }) {
+function MeetingCard({ item, index }) {
   const meetingCode = item?.meetingCode || item?.code || "-";
   const meetingDate = item?.date || item?.createdAt;
-  const canRejoin = meetingCode !== "-";
 
   return (
     <article className="flex flex-wrap items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 px-6 py-5 transition hover:border-white/20 hover:bg-zinc-800">
@@ -60,19 +59,6 @@ function MeetingCard({ item, index, onRejoin }) {
         </div>
       </div>
 
-      <button
-        className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-          canRejoin
-            ? "bg-blue-600/20 text-blue-300 hover:bg-blue-600 hover:text-white"
-            : "cursor-not-allowed bg-white/5 text-white/25"
-        }`}
-        disabled={!canRejoin}
-        onClick={() => canRejoin && onRejoin(meetingCode)}
-        type="button"
-      >
-        <AppIcon name="refresh" size={14} />
-        Rejoin
-      </button>
     </article>
   );
 }
@@ -146,7 +132,7 @@ export default function History() {
         <section className="mb-8">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-white/35">History</p>
           <h1 className="text-4xl font-bold tracking-tight">Meeting history</h1>
-          <p className="mt-1 text-sm text-white/45">Track and rejoin your recent sessions.</p>
+          <p className="mt-1 text-sm text-white/45">Track your recent sessions.</p>
         </section>
 
         {loading ? (
@@ -204,7 +190,6 @@ export default function History() {
                   key={`${item?.meetingCode || item?.code || "meeting"}-${index}`}
                   index={index}
                   item={item}
-                  onRejoin={(meetingCode) => navigate(`/videomeet?code=${meetingCode}`)}
                 />
               ))}
             </div>

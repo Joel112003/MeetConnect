@@ -149,7 +149,12 @@ export default function ForgotPassword() {
                 disabled={loading}
                 className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-800"
               >
-                {loading ? "Sending OTP..." : "Send OTP"}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2" aria-hidden="true">
+                    <span className="h-4 w-4 animate-pulse rounded-full bg-white/40" />
+                    <span className="h-3 w-24 animate-pulse rounded bg-white/40" />
+                  </span>
+                ) : "Send OTP"}
               </button>
             </form>
           ) : null}
@@ -172,7 +177,12 @@ export default function ForgotPassword() {
                 disabled={loading}
                 className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-800"
               >
-                {loading ? "Verifying..." : "Verify OTP"}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2" aria-hidden="true">
+                    <span className="h-4 w-4 animate-pulse rounded-full bg-white/40" />
+                    <span className="h-3 w-24 animate-pulse rounded bg-white/40" />
+                  </span>
+                ) : "Verify OTP"}
               </button>
             </form>
           ) : null}
@@ -206,7 +216,12 @@ export default function ForgotPassword() {
                 disabled={loading}
                 className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-800"
               >
-                {loading ? "Resetting..." : "Reset Password"}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2" aria-hidden="true">
+                    <span className="h-4 w-4 animate-pulse rounded-full bg-white/40" />
+                    <span className="h-3 w-24 animate-pulse rounded bg-white/40" />
+                  </span>
+                ) : "Reset Password"}
               </button>
             </form>
           ) : null}

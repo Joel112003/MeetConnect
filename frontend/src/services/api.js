@@ -87,4 +87,38 @@ export const api = {
       method: "POST",
       data: { email, newPassword },
     }),
+
+  scheduleMeeting: (meetingData) =>
+    apiRequest({
+      url: "/api/v1/meetings/schedule",
+      method: "POST",
+      data: meetingData,
+    }),
+
+  getGoogleCalendarStatus: () =>
+    apiRequest({
+      url: "/api/v1/meetings/google/status",
+      method: "GET",
+    }),
+
+    addToGoogleCalendar: (meetingId) =>
+    apiRequest({
+      url: "/api/v1/meetings/add-to-calendar",
+      method: "POST",
+      data: { meetingId },
+    }),
+
+  getScheduledMeetings: () =>
+    apiRequest({
+      url: "/api/v1/meetings",
+      method: "GET",
+    }),
+
+  deleteMeeting: (meetingId) =>
+    apiRequest({
+      url: `/api/v1/meetings/${meetingId}`,
+      method: "DELETE",
+    }),
+
+  
 };

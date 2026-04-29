@@ -6,6 +6,7 @@ import useChat from "../hooks/useChat";
 import { getMeetingCodeFromURL } from "../utils/meetingUtils";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { useTimedToast } from "../hooks/useTimedToast";
 
 import Lobby from "../components/Lobby";
 import VideoGrid from "../components/VideoGrid";
@@ -36,9 +37,9 @@ const VideoMeet = () => {
   const [inLobby, setInLobby] = useState(true);
   const [chatOpen, setChatOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
-  const [statusToast, setStatusToast] = useState("");
   const socketCleanupRef = useRef(null);
   const [meetingCode] = useState(() => getMeetingCodeFromURL());
+  const { message: statusToast, showToast } = useTimedToast(1800);
 
   const username = resolveDisplayName(user);
 
@@ -60,9 +61,9 @@ const VideoMeet = () => {
       socket,
       localStreamRef,
       onParticipantJoined: (_, participantName) =>
-        setStatusToast(`${participantName || "Participant"} entered the meeting`),
+        showToast(`${participantName || "Participant"} entered the meeting`),
       onParticipantLeft: (_, participantName) =>
-        setStatusToast(`${participantName || "Participant"} left the meeting`),
+        showToast(`${participantName || "Participant"} left the meeting`),
     });
 
   const {
@@ -93,7 +94,7 @@ const VideoMeet = () => {
     socketCleanupRef.current?.();
     socketCleanupRef.current = joinRoom(addMessage, displayName);
     setInLobby(false);
-    setStatusToast("Entered room successfully");
+    showToast("Entered room successfully");
   }, [
     username,
     socket,
@@ -102,6 +103,7 @@ const VideoMeet = () => {
     addMeetingToHistory,
     joinRoom,
     addMessage,
+    showToast,
   ]);
 
   const handleToggleScreen = useCallback(
@@ -128,16 +130,9 @@ const VideoMeet = () => {
     if (socket) {
       socket.disconnect();
     }
-    setStatusToast("Left room successfully");
+    showToast("Left room successfully");
     setTimeout(() => navigate("/dashboard", { replace: true }), 350);
-  }, [localStreamRef, cleanupConnections, socket, navigate]);
-
-  useEffect(() => {
-    if (statusToast) {
-      const timeoutId = setTimeout(() => setStatusToast(""), 1800);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [statusToast]);
+  }, [localStreamRef, cleanupConnections, socket, navigate, showToast]);
 
   useEffect(() => {
     if (inLobby) {

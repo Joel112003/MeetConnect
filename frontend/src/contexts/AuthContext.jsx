@@ -86,9 +86,10 @@ const applyAuthSuccess = ({ data, setToken, setUser }) => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const initialToken = getStoredToken();
   const [user, setUser] = useState(readCachedUser);
-  const [token, setToken] = useState(getStoredToken());
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(initialToken);
+  const [loading, setLoading] = useState(Boolean(initialToken));
   const [error, setError] = useState(null);
 
   const fetchUser = useCallback(async () => {
@@ -113,16 +114,12 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    if (!user) {
-      setUserWithCache(setUser, null, token);
-    }
-
     fetchUser();
-  }, [token, user, fetchUser]);
+  }, [token, fetchUser]);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     await fetchUser();
-  };
+  }, [fetchUser]);
 
   const updateUserInContext = (payload) => {
     setUserWithCache(setUser, payload, token);
@@ -183,18 +180,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const getHistoryOfUser = async () => {
+  const getHistoryOfUser = useCallback(async () => {
     const data = await api.getHistoryOfUser();
     if (Array.isArray(data)) return data;
     if (Array.isArray(data?.history)) return data.history;
     if (Array.isArray(data?.meetings)) return data.meetings;
     return [];
-  };
+  }, []);
 
-  const addMeetingToHistory = async (meetingCode) => {
+  const addMeetingToHistory = useCallback(async (meetingCode) => {
     if (!meetingCode) return;
     await api.addMeetingToHistory(meetingCode);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

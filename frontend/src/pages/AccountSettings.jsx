@@ -195,8 +195,17 @@ export default function AccountSettings() {
               disabled={submittingProfile}
               type="submit"
             >
-              <AppIcon name="check" size={14} />
-              {submittingProfile ? "Saving..." : "Save profile"}
+              {submittingProfile ? (
+                <span className="flex items-center justify-center gap-2" aria-hidden="true">
+                  <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-white/40" />
+                  <span className="h-3 w-20 animate-pulse rounded bg-white/40" />
+                </span>
+              ) : (
+                <>
+                  <AppIcon name="check" size={14} />
+                  Save profile
+                </>
+              )}
             </button>
           </form>
 
@@ -251,8 +260,17 @@ export default function AccountSettings() {
               disabled={submittingPassword}
               type="submit"
             >
-              <AppIcon name="shield" size={14} />
-              {submittingPassword ? "Updating..." : "Update password"}
+              {submittingPassword ? (
+                <span className="flex items-center justify-center gap-2" aria-hidden="true">
+                  <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-zinc-900/40" />
+                  <span className="h-3 w-24 animate-pulse rounded bg-zinc-900/40" />
+                </span>
+              ) : (
+                <>
+                  <AppIcon name="shield" size={14} />
+                  Update password
+                </>
+              )}
             </button>
           </form>
         </section>
@@ -276,8 +294,17 @@ export default function AccountSettings() {
               onClick={handleLogoutAllDevices}
               type="button"
             >
-              <AppIcon name="logout" size={14} />
-              {submittingSecurity ? "Processing..." : "Logout all devices"}
+              {submittingSecurity ? (
+                <span className="flex items-center justify-center gap-2" aria-hidden="true">
+                  <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-white/40" />
+                  <span className="h-3 w-28 animate-pulse rounded bg-white/40" />
+                </span>
+              ) : (
+                <>
+                  <AppIcon name="logout" size={14} />
+                  Logout all devices
+                </>
+              )}
             </button>
           </div>
         </aside>
