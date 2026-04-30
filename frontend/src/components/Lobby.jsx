@@ -11,15 +11,16 @@ const Lobby = ({ username, onJoin, localStream, meetingCode }) => {
   const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
-    if (localVideoRef.current && localStream) {
-      localVideoRef.current.srcObject = localStream;
+    const currentVideo = localVideoRef.current;
+    if (currentVideo && localStream) {
+      currentVideo.srcObject = localStream;
     }
 
     // release video element
     return () => {
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = null;
-        localVideoRef.current.pause();
+      if (currentVideo) {
+        currentVideo.srcObject = null;
+        currentVideo.pause();
       }
     };
   }, [localStream]);

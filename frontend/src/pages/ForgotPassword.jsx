@@ -46,7 +46,7 @@ export default function ForgotPassword() {
 
     try {
       setLoading(true);
-      const data = await api.requestPasswordOtp(normalizedEmail);
+      await api.requestPasswordOtp(normalizedEmail);
       setEmail(normalizedEmail);
       setSuccess("OTP sent successfully. Please check your email.");
       setStep(2);

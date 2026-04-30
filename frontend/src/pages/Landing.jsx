@@ -224,7 +224,7 @@ export default function Landing() {
     const params = new URLSearchParams(window.location.search);
     const show = params.get("logout") === "1" || sessionStorage.getItem("postLogoutToast") === "1";
     if (show) {
-      setToastMessage("Logged out successfully");
+      setTimeout(() => setToastMessage("Logged out successfully"), 0);
       sessionStorage.removeItem("postLogoutToast");
       if (params.get("logout") === "1") {
         params.delete("logout");
