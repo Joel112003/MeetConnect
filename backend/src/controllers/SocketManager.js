@@ -1,29 +1,19 @@
 import { Server } from "socket.io";
 
-// room registry
-const activeRooms = new Set();
+import { client as redisClient } from "../config/redisClient.js";
 
 // register room
-export function registerRoom(roomKey) {
-  activeRooms.add(roomKey);
+export async function registerRoom(roomKey) {
+  await redisClient.sAdd("activeRooms", roomKey);
+  await redisClient.expire("activeRooms", 24 * 60 * 60); // expire after 24h
 }
 
 // check if room registered
-export function isRoomRegistered(roomKey) {
-  return activeRooms.has(roomKey);
+export async function isRoomRegistered(roomKey) {
+  return await redisClient.sIsMember("activeRooms", roomKey);
 }
 
-// check if room active
-export function isRoomActive(roomKey) {
-  return rooms.has(roomKey) && rooms.get(roomKey).size > 0;
-}
-
-// state maps
-const rooms = new Map();
-const messages = new Map();
-const socketJoinTime = new Map();
-const socketToRoom = new Map();
-const socketToName = new Map();
+import { createAdapter } from "@socket.io/redis-adapter";
 
 // socket setup
 export function InitializeSocketIO(httpServer) {
@@ -36,10 +26,23 @@ export function InitializeSocketIO(httpServer) {
     },
   });
 
+  const pubClient = redisClient.duplicate();
+  const subClient = redisClient.duplicate();
+
+  Promise.all([pubClient.connect(), subClient.connect()])
+    .then(() => {
+      io.adapter(createAdapter(pubClient, subClient));
+      console.log("Socket.IO Redis adapter configured successfully.");
+    })
+    .catch((err) => {
+      console.error("Redis adapter connection failed:", err.message);
+    });
+
   io.on("connection", (socket) => {
     console.log(`[socket] connected: ${socket.id}`);
+    socket.data.joinTime = new Date();
 
-    socket.on("join-call", (payload) => {
+    socket.on("join-call", async (payload) => {
       const path = typeof payload === "string" ? payload : payload?.path;
       const username =
         typeof payload === "object" && typeof payload?.username === "string"
@@ -52,45 +55,42 @@ export function InitializeSocketIO(httpServer) {
       }
 
       // block unregistered rooms
-      if (!activeRooms.has(path)) {
+      if (!(await isRoomRegistered(path))) {
         console.warn(`[join-call] REJECTED ${socket.id} — room "${path}" is not registered`);
         socket.emit("join-error", { code: "ROOM_NOT_FOUND", message: "Meeting room not found." });
         return;
       }
 
-      if (socketToRoom.has(socket.id)) {
+      if (socket.rooms.has(path)) {
         console.warn(`[join-call] ${socket.id} already in a room, ignoring`);
         return;
       }
 
-      if (!rooms.has(path)) {
-        rooms.set(path, new Set());
-        messages.set(path, []);
-      }
+      socket.join(path);
+      socket.data.room = path;
+      socket.data.name = username || "Guest";
 
-      const room = rooms.get(path);
-      room.add(socket.id);
-      socketToRoom.set(socket.id, path);
-      socketToName.set(socket.id, username || "Guest");
-      socketJoinTime.set(socket.id, new Date());
-
-      const roomList = [...room];
-      const participants = roomList.map((id) => ({
-        id,
-        name: socketToName.get(id) || "Guest",
+      const socketsInRoom = await io.in(path).fetchSockets();
+      const participants = socketsInRoom.map((s) => ({
+        id: s.id,
+        name: s.data.name || "Guest",
       }));
 
-      for (const id of room) {
-        io.to(id).emit("user-joined", {
-          id: socket.id,
-          name: socketToName.get(socket.id) || "Guest",
-          clients: participants,
-        });
-      }
+      // Emit to everyone in the room
+      io.in(path).emit("user-joined", {
+        id: socket.id,
+        name: socket.data.name,
+        clients: participants,
+      });
 
-      const history = messages.get(path) ?? [];
-      for (const { data, sender, socketId } of history) {
-        io.to(socket.id).emit("chat-message", data, sender, socketId);
+      try {
+        const historyData = await redisClient.lRange(`chat:${path}`, 0, -1);
+        const history = historyData.map((h) => JSON.parse(h));
+        for (const msg of history) {
+          socket.emit("chat-message", msg.data, msg.sender, msg.socketId);
+        }
+      } catch (err) {
+        console.error("Failed to load chat history:", err.message);
       }
     });
 
@@ -98,36 +98,35 @@ export function InitializeSocketIO(httpServer) {
       io.to(toId).emit("signal", socket.id, payload);
     });
 
-    socket.on("chat-message", (payload) => {
-      const path = socketToRoom.get(socket.id);
+    socket.on("chat-message", async (payload) => {
+      const path = socket.data.room;
       if (!path) {
         console.warn(`[chat-message] ${socket.id} is not in any room`);
         return;
       }
 
       const data = typeof payload === "object" ? payload?.message : payload;
-      const sender =
-        typeof payload === "object" ? payload?.username || "Guest" : "Guest";
+      const sender = typeof payload === "object" ? payload?.username || "Guest" : "Guest";
 
       if (!data || typeof data !== "string" || !data.trim()) {
         return;
       }
 
-      messages
-        .get(path)
-        .push({ data: data.trim(), sender, socketId: socket.id });
-      console.log(`[chat-message] room="${path}" sender="${sender}":`, data);
+      const msgObj = { data: data.trim(), sender, socketId: socket.id };
 
-      const room = rooms.get(path);
-      if (room) {
-        for (const id of room) {
-          io.to(id).emit("chat-message", data, sender, socket.id);
-        }
+      // Broadcast message to everyone in the room including sender
+      io.in(path).emit("chat-message", msgObj.data, msgObj.sender, msgObj.socketId);
+
+      try {
+        await redisClient.rPush(`chat:${path}`, JSON.stringify(msgObj));
+        await redisClient.expire(`chat:${path}`, 24 * 60 * 60);
+      } catch (err) {
+        console.error("Failed to save chat message:", err.message);
       }
     });
 
     socket.on("send-emoji", (payload) => {
-      const path = socketToRoom.get(socket.id);
+      const path = socket.data.room;
       if (!path) return;
 
       const emoji = typeof payload?.emoji === "string" ? payload.emoji : "";
@@ -138,55 +137,27 @@ export function InitializeSocketIO(httpServer) {
 
       if (!emoji.trim()) return;
 
-      const room = rooms.get(path);
-      if (!room) return;
-
-      for (const id of room) {
-        if (id !== socket.id) {
-          io.to(id).emit("receive-emoji", { emoji, senderName });
-        }
-      }
+      socket.to(path).emit("receive-emoji", { emoji, senderName });
     });
 
     socket.on("disconnect", () => {
-      const path = socketToRoom.get(socket.id);
+      const path = socket.data.room;
 
       if (path) {
-        const room = rooms.get(path);
-
-        if (room) {
-          for (const id of room) {
-            if (id !== socket.id) {
-              io.to(id).emit("user-left", {
-                id: socket.id,
-                name: socketToName.get(socket.id) || "Guest",
-              });
-              io.to(id).emit("user-disconnected", {
-                id: socket.id,
-                name: socketToName.get(socket.id) || "Guest",
-              });
-            }
-          }
-
-          room.delete(socket.id);
-
-          if (room.size === 0) {
-            rooms.delete(path);
-            messages.delete(path);
-            // cleanup empty room
-            activeRooms.delete(path);
-          }
-        }
-
-        socketToRoom.delete(socket.id);
+        socket.to(path).emit("user-left", {
+          id: socket.id,
+          name: socket.data.name || "Guest",
+        });
+        socket.to(path).emit("user-disconnected", {
+          id: socket.id,
+          name: socket.data.name || "Guest",
+        });
       }
 
-      const joinTime = socketJoinTime.get(socket.id);
-      socketToName.delete(socket.id);
+      const joinTime = socket.data.joinTime;
       if (joinTime) {
         const seconds = ((Date.now() - joinTime.getTime()) / 1000).toFixed(1);
         console.log(`[socket] disconnected: ${socket.id} (online ${seconds}s)`);
-        socketJoinTime.delete(socket.id);
       } else {
         console.log(`[socket] disconnected: ${socket.id}`);
       }

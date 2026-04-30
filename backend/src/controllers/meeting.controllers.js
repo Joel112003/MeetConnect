@@ -125,7 +125,7 @@ export const createRoom = async (req, res) => {
     }
 
     const roomKey = `meeting:${code}`;
-    registerRoom(roomKey);
+    await registerRoom(roomKey);
 
     res.status(201).json({ success: true, code, roomKey });
   } catch (err) {
@@ -144,7 +144,7 @@ export const validateMeetingCode = async (req, res) => {
 
     // check memory registry
     const roomKey = `meeting:${code.toUpperCase()}`;
-    if (isRoomRegistered(roomKey)) {
+    if (await isRoomRegistered(roomKey)) {
       return res.json({ success: true, valid: true, type: "instant" });
     }
 
@@ -155,7 +155,7 @@ export const validateMeetingCode = async (req, res) => {
 
     if (scheduled) {
       const scheduledRoomKey = `meeting:${scheduled.meetingCode.toUpperCase()}`;
-      registerRoom(scheduledRoomKey);
+      await registerRoom(scheduledRoomKey);
       return res.json({ success: true, valid: true, type: "scheduled" });
     }
 
@@ -193,7 +193,7 @@ export const scheduleMeeting = async (req, res) => {
     });
 
     // register room
-    registerRoom(`meeting:${meetingId.toUpperCase()}`);
+    await registerRoom(`meeting:${meetingId.toUpperCase()}`);
 
     let googleEvent = null;
 

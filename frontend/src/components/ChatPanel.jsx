@@ -45,7 +45,7 @@ const ChatPanel = ({ messages, messageInput, onMessageChange, onSend, onClose })
   };
 
   return (
-    <aside className="fixed inset-0 z-[150] flex flex-col bg-zinc-900 shadow-2xl shadow-black/50 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-80 sm:border-l sm:border-white/10">
+    <aside className="fixed inset-0 z-[150] flex flex-col bg-zinc-900 pb-20 shadow-2xl shadow-black/50 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-80 sm:border-l sm:border-white/10 sm:pb-0">
       <header className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
         <h2 className="text-sm font-semibold text-white/90">In-meeting chat</h2>
         <button

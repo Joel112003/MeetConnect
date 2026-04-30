@@ -51,7 +51,7 @@ const Lobby = ({ username, onJoin, localStream, meetingCode }) => {
 
       <button
         onClick={() => navigate("/dashboard")}
-        className="absolute left-4 top-4 inline-flex h-10 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white sm:left-6 sm:top-6"
+        className="absolute left-4 top-4 z-50 inline-flex h-10 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white sm:left-6 sm:top-6"
         type="button"
       >
         <AppIcon name="arrowLeft" size={16} />

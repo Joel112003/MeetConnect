@@ -11,7 +11,7 @@ export const ICE_SERVERS = {
 };
 
 export const SOCKET_OPTIONS = {
-  secure: false,        
+  transports: ["websocket", "polling"],
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
