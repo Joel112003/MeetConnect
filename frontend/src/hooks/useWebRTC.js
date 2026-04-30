@@ -102,9 +102,7 @@ const useWebRTC = ({
       upsertRemoteVideo(peerId, remoteStream);
     };
 
-    pc.onaddStream = (event) => {
-      upsertRemoteVideo(peerId, event.stream);
-    };
+
     pc.onconnectionstatechange = () => {
       console.log(`[WebRTC] Peer ${peerId} state: ${pc.connectionState}`);
       if (pc.connectionState === "failed") {

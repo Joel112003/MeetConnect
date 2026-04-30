@@ -9,7 +9,8 @@ export const generateMeetingCode = () => {
 
 export const isValidMeetingCode = (code) => {
   if (!code) return false;
-  return /^[A-Z0-9]{6}$/.test(code.toUpperCase());
+
+  return /^[A-Za-z0-9]{4,20}$/.test(code.trim());
 };
 
 export const getMeetingCodeFromURL = () => {

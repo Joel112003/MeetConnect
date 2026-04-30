@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { createFallbackStream } from "../utils/mediaUtils";
 
 export const useMediaStream = () => {
@@ -13,21 +13,45 @@ export const useMediaStream = () => {
     () => !!navigator.mediaDevices?.getDisplayMedia,
   );
 
+  // stop all tracks
   const stopCurrentStream = useCallback(() => {
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => track.stop());
+    const stream = localStreamRef.current;
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+        stream.removeTrack(track);
+      });
     }
+    localStreamRef.current = null;
   }, []);
 
-  const applyStream = useCallback((stream) => {
-    localStreamRef.current = stream;
-    setLocalStream(stream);
-    if (localVideoRef.current) {
-      localVideoRef.current.srcObject = stream;
-    }
-  }, []);
+  // apply stream
+  const applyStream = useCallback(
+    (stream) => {
 
+      if (localStreamRef.current && localStreamRef.current !== stream) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+
+      localStreamRef.current = stream;
+      setLocalStream(stream);
+
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+    },
+    [],
+  );
+
+  // initialize media
   const initMedia = useCallback(async () => {
+
+    if (localStreamRef.current) {
+      const tracks = localStreamRef.current.getTracks();
+      const hasLiveTracks = tracks.some((t) => t.readyState === "live");
+      if (hasLiveTracks) return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
@@ -126,6 +150,17 @@ export const useMediaStream = () => {
     [screenSharing, stopCurrentStream, applyStream, switchToCamera],
   );
 
+  // cleanup
+  useEffect(() => {
+    return () => {
+      const stream = localStreamRef.current;
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      localStreamRef.current = null;
+    };
+  }, []);
+
   return {
     localVideoRef,
     localStreamRef,
@@ -135,6 +170,7 @@ export const useMediaStream = () => {
     screenSharing,
     screenAvailable,
     initMedia,
+    stopCurrentStream,
     toggleVideo,
     toggleAudio,
     toggleScreen,

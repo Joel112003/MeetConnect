@@ -1,5 +1,5 @@
 import React from "react";
-import { Skeleton } from "boneyard-js/react";
+import Skeleton from "../common/Skeleton";
 
 export default function AuthActionButton({
   type = "button",
@@ -27,19 +27,7 @@ export default function AuthActionButton({
       className={`${baseClassName} ${variantClassName} ${className}`.trim()}
     >
       {loading ? (
-        <Skeleton
-          name="auth-action-button"
-          loading
-          className="w-full"
-          fallback={
-            <span className="flex w-full items-center justify-center gap-2" aria-hidden="true">
-              <span className="h-4 w-4 animate-pulse rounded-full bg-white/40" />
-              <span className="h-3 w-28 animate-pulse rounded bg-white/40" />
-            </span>
-          }
-        >
-          <span className="inline-flex items-center justify-center gap-2.5 leading-none">{children || label}</span>
-        </Skeleton>
+        <Skeleton type="button" />
       ) : (
         <span className="inline-flex items-center justify-center gap-2.5 leading-none">{children || label}</span>
       )}

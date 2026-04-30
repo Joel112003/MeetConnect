@@ -11,7 +11,7 @@ const getKey = () => {
     if (fromUtf8.length === 32) return fromUtf8;
   }
 
-  // Fallback keeps app functional in local dev; set GOOGLE_TOKEN_ENCRYPTION_KEY in production.
+  // fallback key for dev
   const fallbackSource = process.env.JWT_SECRET || "meetconnect-dev-fallback-key";
   return crypto.createHash("sha256").update(fallbackSource).digest();
 };

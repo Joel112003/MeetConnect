@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { AppIcon } from "../../assets/icons/AppIcons";
 import { isValidMeetingCode } from "../../utils/meetingUtils";
+import { api } from "../../services/api";
 
 export default function JoinMeetingModal({ open, onClose, onJoin }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [validating, setValidating] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -17,10 +19,19 @@ export default function JoinMeetingModal({ open, onClose, onJoin }) {
     return () => window.removeEventListener("keydown", onEsc);
   }, [open, onClose]);
 
+
+  useEffect(() => {
+    if (open) {
+      setCode("");
+      setError("");
+      setValidating(false);
+    }
+  }, [open]);
+
   if (!open) return null;
 
-  const handleSubmit = () => {
-    const normalized = code.trim().toUpperCase();
+  const handleSubmit = async () => {
+    const normalized = code.trim();
 
     if (!normalized) {
       setError("Enter a meeting code to continue");
@@ -28,12 +39,27 @@ export default function JoinMeetingModal({ open, onClose, onJoin }) {
     }
 
     if (!isValidMeetingCode(normalized)) {
-      setError("Meeting code must be 6 alphanumeric characters");
+      setError("Enter a valid alphanumeric meeting code");
       return;
     }
 
+    // validate code
+    setValidating(true);
     setError("");
-    onJoin(normalized);
+    try {
+      const result = await api.validateMeetingCode(normalized);
+      if (!result?.valid) {
+        setError("Meeting not found. Check the code and try again.");
+        setValidating(false);
+        return;
+      }
+      setError("");
+      onJoin(normalized);
+    } catch (err) {
+      setError(err?.message || "Unable to verify meeting code. Try again.");
+    } finally {
+      setValidating(false);
+    }
   };
 
   return (
@@ -65,15 +91,16 @@ export default function JoinMeetingModal({ open, onClose, onJoin }) {
           id="meeting-code"
           value={code}
           onChange={(event) => {
-            setCode(event.target.value.toUpperCase());
+            setCode(event.target.value);
             setError("");
           }}
           onKeyDown={(event) => {
-            if (event.key === "Enter") handleSubmit();
+            if (event.key === "Enter" && !validating) handleSubmit();
           }}
-          maxLength={6}
-          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-lg font-bold tracking-[0.25em] text-white outline-none placeholder:text-white/35 focus:border-blue-500"
-          placeholder="A1B2C3"
+          maxLength={20}
+          disabled={validating}
+          className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-lg font-bold tracking-[0.25em] text-white outline-none placeholder:text-white/35 focus:border-blue-500 disabled:opacity-50"
+          placeholder="e.g. A1B2C3"
         />
 
         {error ? <p className="mt-2 text-sm font-medium text-red-400">{error}</p> : null}
@@ -82,16 +109,18 @@ export default function JoinMeetingModal({ open, onClose, onJoin }) {
           <button
             onClick={onClose}
             type="button"
-            className="rounded-xl border border-white/15 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10"
+            disabled={validating}
+            className="rounded-xl border border-white/15 py-2.5 text-sm font-medium text-white/70 hover:bg-white/10 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             type="button"
-            className="rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-500"
+            disabled={validating}
+            className="rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-60"
           >
-            Join meeting
+            {validating ? "Checking..." : "Join meeting"}
           </button>
         </div>
       </div>

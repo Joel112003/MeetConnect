@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { SocketProvider } from "./contexts/SocketContext";
+import Skeleton from "./components/common/Skeleton";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
@@ -11,18 +12,10 @@ const History = lazy(() => import("./pages/History"));
 const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
+const MeetRedirect = lazy(() => import("./pages/MeetRedirect"));
 const ProtectedRoute = lazy(() => import("./components/ProtectedRoute"));
 
-const RouteLoader = () => (
-  <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
-    <div className="w-full max-w-xs rounded-2xl border border-white/10 bg-zinc-900/80 p-5">
-      <div className="h-4 w-24 animate-pulse rounded bg-white/15" />
-      <div className="mt-4 h-3 w-full animate-pulse rounded bg-white/10" />
-      <div className="mt-2 h-3 w-2/3 animate-pulse rounded bg-white/10" />
-      <span className="sr-only">Loading route</span>
-    </div>
-  </div>
-);
+const RouteLoader = () => <Skeleton type="page" srLabel="Loading route" />;
 
 
 function App() {
@@ -95,6 +88,14 @@ function App() {
           element={
             <ProtectedRoute>
               <AccountSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/meet/:code"
+          element={
+            <ProtectedRoute>
+              <MeetRedirect />
             </ProtectedRoute>
           }
         />

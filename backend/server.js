@@ -1,4 +1,4 @@
-//Import necessary modules and configurations
+
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
@@ -20,7 +20,7 @@ if (process.env.TRUST_PROXY === "true") {
   app.set("trust proxy", 1);
 }
 
-// Middleware
+
 const allowedOrigins = (
   process.env.CORS_ORIGINS ||
   "http://localhost:5173,http://127.0.0.1:5173"
@@ -45,23 +45,17 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 
-app.use(globalLimiter); // Apply global rate limiter after CORS/preflight middleware
+app.use(globalLimiter); // rate limiting
 app.use(cookieParser());
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ limit: "40kb" }));
-// Routes
+
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/users", accountRoutes);
 app.use("/api/v1/meetings", meetingRoutes);
 
 
 const PORT = process.env.PORT || 8000;
-io.on("connection", (socket) => {
-  console.log("a user connected");
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
-});
 
 const startServer = async () => {
   try {

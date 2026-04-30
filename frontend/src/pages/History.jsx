@@ -3,21 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { AppIcon } from "../assets/icons/AppIcons";
 import meetConnectLogo from "../assets/images/MeetConnect.png";
 import { useAuth } from "../hooks/useAuth";
-
-const formatDate = (dateString) => {
-  if (!dateString) return "Unknown date";
-
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return "Unknown date";
-
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-};
+import Skeleton from "../components/common/Skeleton";
+import { formatDateTime } from "../utils/dateFormatters";
 
 const getHistoryList = (payload) => {
   if (Array.isArray(payload)) return payload;
@@ -26,36 +13,28 @@ const getHistoryList = (payload) => {
   return [];
 };
 
-function HistorySkeletonRow() {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-zinc-900 px-6 py-5">
-      <div className="h-3 w-24 animate-pulse rounded bg-white/10" />
-      <div className="h-3 w-40 animate-pulse rounded bg-white/10" />
-      <div className="h-3 w-20 animate-pulse rounded bg-white/10" />
-    </div>
-  );
-}
+
 
 function MeetingCard({ item, index }) {
   const meetingCode = item?.meetingCode || item?.code || "-";
   const meetingDate = item?.date || item?.createdAt;
 
   return (
-    <article className="flex flex-wrap items-center gap-4 rounded-2xl border border-white/10 bg-zinc-900 px-6 py-5 transition hover:border-white/20 hover:bg-zinc-800">
-      <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-xs font-semibold text-white/40">
+    <article className="flex flex-col gap-2.5 rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3.5 transition hover:border-white/20 hover:bg-zinc-800 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:px-6 sm:py-5">
+      <div className="hidden h-8 w-8 items-center justify-center rounded-lg bg-white/5 text-xs font-semibold text-white/40 sm:inline-flex">
         {index + 1}
       </div>
 
-      <div className="min-w-[140px] flex-1">
+      <div className="min-w-0 flex-1">
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/35">Meeting code</p>
         <p className="font-mono text-sm font-bold tracking-wider text-white">{meetingCode}</p>
       </div>
 
-      <div className="min-w-[170px] flex-1">
+      <div className="min-w-0 flex-1">
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-white/35">Date</p>
         <div className="flex items-center gap-2 text-sm font-medium text-white/65">
           <AppIcon name="calendar" size={14} />
-          <span>{formatDate(meetingDate)}</span>
+          <span>{formatDateTime(meetingDate)}</span>
         </div>
       </div>
 
@@ -109,37 +88,35 @@ export default function History() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <nav className="sticky top-0 z-40 h-14 border-b border-white/10 bg-zinc-950/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-full w-full max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-2.5">
+        <div className="mx-auto flex h-full w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
+          <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg">
               <img src={meetConnectLogo} alt="MeetConnect logo" className="h-full w-full scale-225 object-contain" />
             </div>
-            <span className="text-sm font-semibold tracking-tight">MeetConnect</span>
+            <span className="hidden text-sm font-semibold tracking-tight sm:inline">MeetConnect</span>
           </div>
 
           <button
-            className="inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/15 px-2.5 py-1.5 text-xs font-medium text-white/70 hover:bg-white/10 sm:gap-2 sm:px-3"
             onClick={() => navigate("/dashboard")}
             type="button"
           >
             <AppIcon name="arrowLeft" size={14} />
-            Dashboard
+            <span className="hidden sm:inline">Dashboard</span>
           </button>
         </div>
       </nav>
 
-      <main className="mx-auto w-full max-w-6xl px-6 pb-12 pt-12">
-        <section className="mb-8">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.15em] text-white/35">History</p>
-          <h1 className="text-4xl font-bold tracking-tight">Meeting history</h1>
-          <p className="mt-1 text-sm text-white/45">Track your recent sessions.</p>
+      <main className="mx-auto w-full max-w-6xl px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-12">
+        <section className="mb-6 sm:mb-8">
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-white/35 sm:mb-2 sm:text-xs">History</p>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-4xl">Meeting history</h1>
+          <p className="mt-1 text-xs text-white/45 sm:text-sm">Track your recent sessions.</p>
         </section>
 
         {loading ? (
-          <section className="space-y-3">
-            <HistorySkeletonRow />
-            <HistorySkeletonRow />
-            <HistorySkeletonRow />
+          <section>
+            <Skeleton type="row" count={3} srLabel="Loading meeting history" />
           </section>
         ) : null}
 

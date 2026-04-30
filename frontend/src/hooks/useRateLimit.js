@@ -53,7 +53,7 @@ export const useRateLimit = (maxAttempts = 5, windowMs = 15 * 60 * 1000) => {
   }, [blockedUntil]);
 
   const registerAttempt = useCallback(() => {
-    if (blockedUntil) return; // already blocked
+    if (blockedUntil) return;
 
     setAttempts((prev) => {
       const next = prev + 1;

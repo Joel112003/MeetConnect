@@ -25,14 +25,14 @@ const commonLoginLimiterOptions = {
   },
 };
 
-// Blocks bursts from the same client IP (IPv4/IPv6 safe key).
+// block burst by ip
 export const loginIpLimiter = rateLimit({
   ...commonLoginLimiterOptions,
   store: createRedisStore("rl:login-ip:"),
   keyGenerator: (req) => `login:ip:${ipKeyGenerator(req.ip)}`,
 });
 
-// Blocks repeated guessing against the same email/account.
+// block guess by email
 export const loginEmailLimiter = rateLimit({
   ...commonLoginLimiterOptions,
   store: createRedisStore("rl:login-email:"),

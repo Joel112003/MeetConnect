@@ -9,6 +9,7 @@ import {
   validateOtp,
   validateResetPasswordForm,
 } from "../utils/validators";
+import Skeleton from "../components/common/Skeleton";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -108,16 +109,16 @@ export default function ForgotPassword() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.18),transparent_55%)]" />
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="mb-8 flex justify-center">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600">
+        <div className="mb-6 flex justify-center sm:mb-8">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 sm:h-11 sm:w-11">
             <AppIcon name="lock" size={19} className="text-white" />
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-zinc-900/95 p-8 shadow-2xl shadow-black/50 sm:p-10">
-          <div className="mb-8 text-center">
-            <h1 className="mb-1 text-2xl font-bold tracking-tight text-white">{title}</h1>
-            <p className="text-sm text-white/50">Recover your MeetConnect account access</p>
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/95 p-6 shadow-2xl shadow-black/50 sm:p-8 md:p-10">
+          <div className="mb-6 text-center sm:mb-8">
+            <h1 className="mb-1 text-xl font-bold tracking-tight text-white sm:text-2xl">{title}</h1>
+            <p className="text-xs text-white/50 sm:text-sm">Recover your MeetConnect account access</p>
           </div>
 
           {error ? (
@@ -150,10 +151,7 @@ export default function ForgotPassword() {
                 className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-800"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2" aria-hidden="true">
-                    <span className="h-4 w-4 animate-pulse rounded-full bg-white/40" />
-                    <span className="h-3 w-24 animate-pulse rounded bg-white/40" />
-                  </span>
+                  <Skeleton type="button" />
                 ) : "Send OTP"}
               </button>
             </form>
@@ -178,10 +176,7 @@ export default function ForgotPassword() {
                 className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-800"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2" aria-hidden="true">
-                    <span className="h-4 w-4 animate-pulse rounded-full bg-white/40" />
-                    <span className="h-3 w-24 animate-pulse rounded bg-white/40" />
-                  </span>
+                  <Skeleton type="button" />
                 ) : "Verify OTP"}
               </button>
             </form>
@@ -217,10 +212,7 @@ export default function ForgotPassword() {
                 className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-800"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2" aria-hidden="true">
-                    <span className="h-4 w-4 animate-pulse rounded-full bg-white/40" />
-                    <span className="h-3 w-24 animate-pulse rounded bg-white/40" />
-                  </span>
+                  <Skeleton type="button" />
                 ) : "Reset Password"}
               </button>
             </form>

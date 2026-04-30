@@ -4,55 +4,48 @@ import { api } from "../services/api";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 function CalendarIcon() {
   return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      className="shrink-0 opacity-35"
-    >
-      <rect
-        x="1"
-        y="2"
-        width="14"
-        height="13"
-        rx="2.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-      />
-      <path
-        d="M5 1v3M11 1v3M1 6h14"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-      />
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 opacity-35">
+      <rect x="1" y="2" width="14" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M5 1v3M11 1v3M1 6h14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CopyIcon({ copied }) {
+  if (copied) {
+    return (
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0">
+        <path d="M2 8l4 4 8-8" stroke="#4ade80" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0 opacity-50">
+      <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <path d="M6.5 9.5a3.5 3.5 0 0 0 4.95 0l2-2a3.5 3.5 0 0 0-4.95-4.95l-1.25 1.25" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M9.5 6.5a3.5 3.5 0 0 0-4.95 0l-2 2a3.5 3.5 0 0 0 4.95 4.95l1.25-1.25" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   );
 }
 
 function DateTimePicker({ value, onChange }) {
   const today = new Date();
-  const [view, setView] = useState({
-    y: today.getFullYear(),
-    m: today.getMonth(),
-  });
+  const [view, setView] = useState({ y: today.getFullYear(), m: today.getMonth() });
   const [hour, setHour] = useState("09");
   const [min, setMin] = useState("00");
   const [ampm, setAmpm] = useState("AM");
@@ -63,16 +56,9 @@ function DateTimePicker({ value, onChange }) {
 
   const changeMonth = (delta) =>
     setView((v) => {
-      let m = v.m + delta,
-        y = v.y;
-      if (m > 11) {
-        m = 0;
-        y++;
-      }
-      if (m < 0) {
-        m = 11;
-        y--;
-      }
+      let m = v.m + delta, y = v.y;
+      if (m > 11) { m = 0; y++; }
+      if (m < 0) { m = 11; y--; }
       return { y, m };
     });
 
@@ -107,11 +93,9 @@ function DateTimePicker({ value, onChange }) {
 
   return (
     <div className="rounded-xl border border-white/10 bg-[#111] overflow-hidden mt-1.5">
-      {/* Month navigation */}
+
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-white/[0.05]">
-        <span className="text-sm font-semibold text-white">
-          {MONTHS[view.m]} {view.y}
-        </span>
+        <span className="text-sm font-semibold text-white">{MONTHS[view.m]} {view.y}</span>
         <div className="flex gap-1">
           {["‹", "›"].map((ch, i) => (
             <button
@@ -127,54 +111,35 @@ function DateTimePicker({ value, onChange }) {
         </div>
       </div>
 
-      {/* Weekday labels */}
+
       <div className="grid grid-cols-7 px-2.5 pt-2 pb-1">
         {DAYS.map((d) => (
-          <span
-            key={d}
-            className="text-center text-[10px] text-white/25 font-medium tracking-wide"
-          >
-            {d}
-          </span>
+          <span key={d} className="text-center text-[10px] text-white/25 font-medium tracking-wide">{d}</span>
         ))}
       </div>
 
-      {/* Day grid */}
+
       <div className="grid grid-cols-7 gap-px px-2.5 pb-2">
-        {/* Padding days from previous month */}
         {Array.from({ length: firstDay }, (_, i) => (
-          <span
-            key={`prev-${i}`}
-            className="aspect-square flex items-center justify-center text-xs text-white/15"
-          >
+          <span key={`prev-${i}`} className="aspect-square flex items-center justify-center text-xs text-white/15">
             {prevDays - firstDay + i + 1}
           </span>
         ))}
 
-        {/* Current month days */}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const d = i + 1;
-          const isToday =
-            view.y === today.getFullYear() &&
-            view.m === today.getMonth() &&
-            d === today.getDate();
-          const isSelected =
-            sel &&
-            sel.getFullYear() === view.y &&
-            sel.getMonth() === view.m &&
-            sel.getDate() === d;
-
+          const isToday = view.y === today.getFullYear() && view.m === today.getMonth() && d === today.getDate();
+          const isSelected = sel && sel.getFullYear() === view.y && sel.getMonth() === view.m && sel.getDate() === d;
           return (
             <button
               key={d}
               onClick={() => confirmDay(d)}
               className={`aspect-square flex items-center justify-center text-xs rounded-lg transition
-                ${
-                  isSelected
-                    ? "bg-white text-black font-semibold"
-                    : isToday
-                      ? "text-white font-semibold border border-white/25 hover:bg-white/10"
-                      : "text-white/60 hover:bg-white/[0.08] hover:text-white"
+                ${isSelected
+                  ? "bg-white text-black font-semibold"
+                  : isToday
+                  ? "text-white font-semibold border border-white/25 hover:bg-white/10"
+                  : "text-white/60 hover:bg-white/[0.08] hover:text-white"
                 }`}
             >
               {d}
@@ -182,21 +147,16 @@ function DateTimePicker({ value, onChange }) {
           );
         })}
 
-        {/* Padding days for next month */}
         {Array.from({ length: 42 - firstDay - daysInMonth }, (_, i) => (
-          <span
-            key={`next-${i}`}
-            className="aspect-square flex items-center justify-center text-xs text-white/15"
-          >
+          <span key={`next-${i}`} className="aspect-square flex items-center justify-center text-xs text-white/15">
             {i + 1}
           </span>
         ))}
       </div>
 
-      {/* Time selector */}
+
       <div className="flex items-center gap-2 px-1.5 py-2.5 border-t border-white/[0.05]">
         <span className="text-[11px] text-white/30 mr-1">Time</span>
-
         <div className="flex items-center gap-1 bg-white/5 rounded-lg px-2 py-1">
           <input
             value={hour}
@@ -214,16 +174,14 @@ function DateTimePicker({ value, onChange }) {
             className="w-4 bg-transparent text-center text-sm font-mono font-semibold text-white outline-none"
           />
         </div>
-
         {["AM", "PM"].map((ap) => (
           <button
             key={ap}
             onClick={() => setAmpm(ap)}
             className={`text-[11px] font-semibold px-2 py-1 rounded-lg transition border
-              ${
-                ampm === ap
-                  ? "bg-white/15 text-white border-white/25"
-                  : "text-white/35 bg-white/5 border-white/[0.08] hover:text-white/60"
+              ${ampm === ap
+                ? "bg-white/15 text-white border-white/25"
+                : "text-white/35 bg-white/5 border-white/[0.08] hover:text-white/60"
               }`}
           >
             {ap}
@@ -234,7 +192,7 @@ function DateTimePicker({ value, onChange }) {
   );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// helpers
 function formatDisplay(iso) {
   if (!iso) return null;
   return new Date(iso).toLocaleString("en-US", {
@@ -245,7 +203,204 @@ function formatDisplay(iso) {
   });
 }
 
-// ─── Main Modal ───────────────────────────────────────────────────────────────
+// share icon
+function ShareIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="shrink-0">
+      <circle cx="12" cy="3" r="2" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="4" cy="8" r="2" stroke="currentColor" strokeWidth="1.3" />
+      <circle cx="12" cy="13" r="2" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M5.8 7L10.2 4M5.8 9l4.4 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// success banner
+function MeetingLinkBanner({ link, meetingTitle, onClose, onDone }) {
+  const [copied, setCopied] = useState(false);
+  const [shared, setShared] = useState(false);
+
+  // extract code
+  const meetingCode = (() => {
+    try {
+      const url = new URL(link);
+      const codeParam = url.searchParams.get("code");
+      if (codeParam) return codeParam;
+      const segments = url.pathname.split("/").filter(Boolean);
+      return segments[segments.length - 1] || "";
+    } catch {
+      return link;
+    }
+  })();
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(meetingCode).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: meetingTitle || "MeetConnect Meeting",
+      text: `Join my meeting on MeetConnect!\n\nMeeting Code: ${meetingCode}\nJoin here: ${link}`,
+      url: link,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      } else {
+        // fallback copy
+        const shareText = `Join my meeting on MeetConnect!\n\nMeeting Code: ${meetingCode}\nJoin here: ${link}`;
+        await navigator.clipboard.writeText(shareText);
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      }
+    } catch (err) {
+      // ignore share fail
+      if (err?.name !== "AbortError") {
+        console.error("Share failed:", err);
+      }
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+      <div className="w-full max-w-md rounded-2xl border border-white/[0.06] bg-[#0a0a0a] shadow-2xl overflow-hidden">
+
+        <div className="flex items-start justify-between px-6 pt-6 pb-5 border-b border-white/[0.06]">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500/20">
+                <svg className="w-3 h-3 text-green-400" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <h2 className="text-base font-semibold text-white tracking-tight">Meeting Scheduled!</h2>
+            </div>
+            <p className="text-xs text-white/30 mt-0.5">Share the code or link with attendees to join.</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 border border-white/10
+                       text-white/40 hover:text-white hover:bg-white/10 transition text-sm"
+          >
+            ✕
+          </button>
+        </div>
+
+
+        <div className="px-6 py-5 space-y-4">
+
+          <div>
+            <label className="block text-[10px] font-medium text-white/30 uppercase tracking-widest mb-2">
+              Meeting Code
+            </label>
+            <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3.5">
+              <span className="flex-1 text-2xl font-bold font-mono tracking-[0.25em] text-white select-all">
+                {meetingCode}
+              </span>
+              <button
+                onClick={handleCopyCode}
+                title={copied ? "Copied!" : "Copy code"}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition
+                  ${copied
+                    ? "bg-green-500/10 border-green-500/25 text-green-400"
+                    : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"
+                  }`}
+              >
+                <CopyIcon copied={copied} />
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+          </div>
+
+
+          <div>
+            <label className="block text-[10px] font-medium text-white/30 uppercase tracking-widest mb-1.5">
+              Meeting Link
+            </label>
+            <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
+              <LinkIcon />
+              <span className="flex-1 text-xs text-white/50 truncate font-mono">{link}</span>
+              <button
+                onClick={handleCopyLink}
+                title="Copy link"
+                className="text-[11px] text-white/40 hover:text-white transition px-1.5 py-0.5 rounded-md hover:bg-white/10"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-2 gap-3">
+
+            <button
+              onClick={handleShare}
+              className={`flex items-center justify-center gap-2 rounded-xl border py-2.5 text-sm font-medium transition
+                ${shared
+                  ? "border-green-500/25 bg-green-500/[0.08] text-green-400"
+                  : "border-blue-500/25 bg-blue-500/[0.08] text-blue-400 hover:bg-blue-500/[0.15] hover:text-blue-300"
+                }`}
+            >
+              {shared ? (
+                <>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Shared!
+                </>
+              ) : (
+                <>
+                  <ShareIcon />
+                  Share
+                </>
+              )}
+            </button>
+
+
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/[0.07]
+                         bg-white/[0.03] py-2.5 text-sm text-white/50 hover:text-white hover:bg-white/[0.06] transition"
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="opacity-60">
+                <path d="M8 2L14 8M14 8L8 14M14 8H2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Join now
+            </a>
+          </div>
+        </div>
+
+
+        <div className="px-6 pb-6">
+          <button
+            onClick={onDone}
+            className="w-full rounded-xl bg-white/10 hover:bg-white/15 border border-white/10
+                       py-2.5 text-sm font-medium text-white transition"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// main modal
 export default function ScheduleMeetingModal({ onClose, onScheduled }) {
   const [form, setForm] = useState({
     title: "",
@@ -254,12 +409,13 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
     endTime: "",
     attendees: "",
   });
-  const [openPicker, setOpenPicker] = useState(null); // "start" | "end" | null
+  const [openPicker, setOpenPicker] = useState(null);
   const [addToCalendar, setAddToCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [googleConnected, setGoogleConnected] = useState(false);
   const [statusLoading, setStatusLoading] = useState(true);
+  const [scheduledLink, setScheduledLink] = useState(null);
 
   const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -282,11 +438,8 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
         if (active) setStatusLoading(false);
       }
     };
-
     loadStatus();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   const handleConnectGoogle = () => {
@@ -295,7 +448,6 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
       "google-oauth",
       "width=500,height=600,scrollbars=yes",
     );
-
     const timer = setInterval(() => {
       if (popup?.closed) {
         clearInterval(timer);
@@ -316,23 +468,19 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
         description: form.description,
         startTime: form.startTime,
         endTime: form.endTime,
-        attendees: form.attendees
-          .split(",")
-          .map((e) => e.trim())
-          .filter(Boolean),
+        attendees: form.attendees.split(",").map((e) => e.trim()).filter(Boolean),
         addToCalendar,
       });
 
       onScheduled?.(meeting);
-      onClose();
+      // show link banner
+      setScheduledLink(meeting.meetingLink);
     } catch (err) {
       if (err?.status === 409 && err?.data?.code === "GOOGLE_NOT_CONNECTED") {
-        const connectPath =
-          err?.data?.connectPath || "/api/v1/meetings/google/connect";
+        const connectPath = err?.data?.connectPath || "/api/v1/meetings/google/connect";
         window.location.assign(`${API_BASE_URL}${connectPath}`);
         return;
       }
-
       setError(err?.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -342,24 +490,31 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
   const onConfirm = () => {
     if (!form.title || !form.startTime || !form.endTime)
       return setError("Title, start and end time are required");
-    if (addToCalendar && !googleConnected) {
+    if (addToCalendar && !googleConnected)
       return setError("Connect Google Calendar before adding events.");
-    }
     handleSubmit();
   };
+
+  // show success screen
+  if (scheduledLink) {
+    return (
+      <MeetingLinkBanner
+        link={scheduledLink}
+        meetingTitle={form.title}
+        onClose={onClose}
+        onDone={onClose}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
       <div className="w-full max-w-md rounded-2xl border border-white/[0.06] bg-[#0a0a0a] shadow-2xl overflow-hidden">
-        {/* ── Header ── */}
+
         <div className="flex items-start justify-between px-6 pt-6 pb-5 border-b border-white/[0.06]">
           <div>
-            <h2 className="text-base font-semibold text-white tracking-tight">
-              Schedule a Meeting
-            </h2>
-            <p className="text-xs text-white/30 mt-0.5">
-              Set up a new meeting room
-            </p>
+            <h2 className="text-base font-semibold text-white tracking-tight">Schedule a Meeting</h2>
+            <p className="text-xs text-white/30 mt-0.5">Set up a new meeting room</p>
           </div>
           <button
             onClick={onClose}
@@ -370,7 +525,7 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
           </button>
         </div>
 
-        {/* ── Body ── */}
+
         <div className="px-6 py-5 space-y-3">
           {error && (
             <div className="rounded-xl bg-red-500/[0.08] border border-red-500/20 px-4 py-3 text-xs text-red-400 leading-relaxed">
@@ -378,7 +533,7 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
             </div>
           )}
 
-          {/* Title */}
+
           <div>
             <label className="block text-[10px] font-medium text-white/30 uppercase tracking-widest mb-1.5">
               Title
@@ -394,7 +549,7 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
             />
           </div>
 
-          {/* Description */}
+
           <div>
             <label className="block text-[10px] font-medium text-white/30 uppercase tracking-widest mb-1.5">
               Description
@@ -411,55 +566,44 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
             />
           </div>
 
-          {/* ── Date & Time pickers ── */}
+
           <div className="grid grid-cols-2 gap-3">
-            {/* Start */}
+
             <div>
               <label className="block text-[10px] font-medium text-white/30 uppercase tracking-widest mb-1.5">
                 Start
               </label>
               <button
-                onClick={() =>
-                  setOpenPicker(openPicker === "start" ? null : "start")
-                }
+                onClick={() => setOpenPicker(openPicker === "start" ? null : "start")}
                 className={`w-full rounded-xl border px-3 py-2.5 text-sm text-left
                             flex items-center gap-2 transition
-                            ${
-                              openPicker === "start"
-                                ? "border-white/25 bg-white/[0.05]"
-                                : "border-white/[0.07] bg-white/[0.03] hover:border-white/15"
+                            ${openPicker === "start"
+                              ? "border-white/25 bg-white/[0.05]"
+                              : "border-white/[0.07] bg-white/[0.03] hover:border-white/15"
                             }`}
               >
                 <CalendarIcon />
-                <span
-                  className={form.startTime ? "text-white" : "text-white/20"}
-                >
+                <span className={form.startTime ? "text-white" : "text-white/20"}>
                   {formatDisplay(form.startTime) ?? "Pick date & time"}
                 </span>
               </button>
               {openPicker === "start" && (
-                <DateTimePicker
-                  value={form.startTime}
-                  onChange={(iso) => setDateTime("startTime", iso)}
-                />
+                <DateTimePicker value={form.startTime} onChange={(iso) => setDateTime("startTime", iso)} />
               )}
             </div>
 
-            {/* End */}
+
             <div>
               <label className="block text-[10px] font-medium text-white/30 uppercase tracking-widest mb-1.5">
                 End
               </label>
               <button
-                onClick={() =>
-                  setOpenPicker(openPicker === "end" ? null : "end")
-                }
+                onClick={() => setOpenPicker(openPicker === "end" ? null : "end")}
                 className={`w-full rounded-xl border px-3 py-2.5 text-sm text-left
                             flex items-center gap-2 transition
-                            ${
-                              openPicker === "end"
-                                ? "border-white/25 bg-white/[0.05]"
-                                : "border-white/[0.07] bg-white/[0.03] hover:border-white/15"
+                            ${openPicker === "end"
+                              ? "border-white/25 bg-white/[0.05]"
+                              : "border-white/[0.07] bg-white/[0.03] hover:border-white/15"
                             }`}
               >
                 <CalendarIcon />
@@ -468,15 +612,12 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
                 </span>
               </button>
               {openPicker === "end" && (
-                <DateTimePicker
-                  value={form.endTime}
-                  onChange={(iso) => setDateTime("endTime", iso)}
-                />
+                <DateTimePicker value={form.endTime} onChange={(iso) => setDateTime("endTime", iso)} />
               )}
             </div>
           </div>
 
-          {/* Attendees */}
+
           <div>
             <label className="block text-[10px] font-medium text-white/30 uppercase tracking-widest mb-1.5">
               Attendees
@@ -492,10 +633,10 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
             />
           </div>
 
-          {/* Divider */}
+
           <div className="border-t border-white/[0.05] my-1" />
 
-          {/* Google Calendar toggle */}
+
           <label
             className={`flex items-center gap-3 rounded-xl border px-4 py-3 cursor-pointer transition ${
               addToCalendar
@@ -505,24 +646,12 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
           >
             <div
               className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition ${
-                addToCalendar
-                  ? "bg-green-600 border-green-600"
-                  : "border-white/20 bg-white/5"
+                addToCalendar ? "bg-green-600 border-green-600" : "border-white/20 bg-white/5"
               }`}
             >
               {addToCalendar && (
-                <svg
-                  className="w-3 h-3 text-white"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                >
-                  <path
-                    d="M2 6l3 3 5-5"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
             </div>
@@ -533,30 +662,14 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
               className="sr-only"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white/80">
-                Add to Google Calendar
-              </p>
-              <p className="text-xs text-white/30 mt-0.5">
-                You'll be asked for calendar permission
-              </p>
+              <p className="text-sm font-medium text-white/80">Add to Google Calendar</p>
+              <p className="text-xs text-white/30 mt-0.5">You'll be asked for calendar permission</p>
             </div>
             <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
           </label>
 
@@ -582,7 +695,7 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
           ) : null}
         </div>
 
-        {/* ── Footer ── */}
+
         <div className="px-6 pb-6 flex gap-3">
           <button
             onClick={onClose}
@@ -604,8 +717,8 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
             {loading
               ? "Scheduling..."
               : addToCalendar
-                ? "Schedule & Add to Calendar"
-                : "Schedule Meeting"}
+              ? "Schedule & Add to Calendar"
+              : "Schedule Meeting"}
           </button>
         </div>
       </div>

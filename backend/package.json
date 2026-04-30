@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "nodemon server.js",
+    "dev": "nodemon server.js",
     "start": "node server.js",
-    "prod": "pm2 start server.js"
+    "prod": "pm2 start server.js",
+    "test": "echo \"No tests configured\" && exit 0"
   },
   "type": "module",
   "keywords": [],

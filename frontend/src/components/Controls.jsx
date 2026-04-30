@@ -35,7 +35,7 @@ const Timer = () => {
   const secs = (seconds % 60).toString().padStart(2, "0");
 
   return (
-    <div className="flex w-20 items-center gap-2 border-r border-white/10 pr-3">
+    <div className="hidden items-center gap-2 border-r border-white/10 pr-3 sm:flex sm:w-20">
       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.9)]" />
       <span className="text-xs font-medium tracking-wide text-white/60">
         {hours > 0 ? `${hours}:` : ""}
@@ -56,7 +56,7 @@ const CircleButton = ({ onClick, title, active = true, danger = false, highlight
     <Tip label={title}>
       <button
         onClick={onClick}
-        className={`relative flex h-11 w-11 items-center justify-center rounded-full transition ${base} ${highlight ? "ring-2 ring-blue-500/70" : ""}`}
+        className={`relative flex h-10 w-10 items-center justify-center rounded-full transition sm:h-11 sm:w-11 ${base} ${highlight ? "ring-2 ring-blue-500/70" : ""}`}
         aria-label={title}
       >
         {children || <AppIcon name={iconName} size={18} />}
@@ -84,10 +84,10 @@ const Controls = ({
   onEndCall,
 }) => {
   return (
-    <div className="fixed bottom-5 left-1/2 z-[200] flex min-w-[500px] -translate-x-1/2 items-center justify-between gap-4 rounded-full border border-white/10 bg-zinc-900/90 px-4 py-2 shadow-2xl shadow-black/60 backdrop-blur-xl max-sm:min-w-[90vw] max-sm:flex-wrap max-sm:justify-center max-sm:rounded-2xl">
+    <div className="fixed bottom-3 left-1/2 z-[200] flex w-[calc(100%-1.5rem)] max-w-[540px] -translate-x-1/2 items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-zinc-900/90 px-3 py-2 shadow-2xl shadow-black/60 backdrop-blur-xl sm:bottom-5 sm:gap-2 sm:rounded-full sm:px-4 sm:py-2.5">
       <Timer />
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 sm:gap-1.5">
         <CircleButton
           onClick={onToggleAudio}
           active={audioEnabled}
@@ -102,7 +102,7 @@ const Controls = ({
           iconName={videoEnabled ? "camera" : "cameraOff"}
         />
 
-        <span className="mx-1 h-6 w-px bg-white/10" />
+        <span className="mx-0.5 h-5 w-px bg-white/10 sm:mx-1 sm:h-6" />
 
         {screenAvailable ? (
           <CircleButton
@@ -135,23 +135,21 @@ const Controls = ({
           highlight={emojiOpen}
           title="Reactions"
         >
-          <span className="text-lg leading-none">😊</span>
+          <span className="text-base leading-none sm:text-lg">😊</span>
         </CircleButton>
 
-        <span className="mx-1 h-6 w-px bg-white/10" />
+        <span className="mx-0.5 h-5 w-px bg-white/10 sm:mx-1 sm:h-6" />
 
         <Tip label="Leave meeting">
           <button
             onClick={onEndCall}
-            className="flex items-center gap-2 rounded-full bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-900/30 transition hover:bg-rose-500"
+            className="flex h-10 items-center gap-1.5 rounded-full bg-rose-600 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-rose-900/30 transition hover:bg-rose-500 sm:h-auto sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
           >
             <AppIcon name="phoneOff" size={15} />
-            <span>Leave</span>
+            <span className="hidden sm:inline">Leave</span>
           </button>
         </Tip>
       </div>
-
-      <div className="w-20 max-sm:hidden" />
     </div>
   );
 };

@@ -14,6 +14,12 @@ const scheduledMeetingSchema = new mongoose.Schema(
     endTime: { type: Date, required: true },
     attendees: [{ type: String }],
     googleEventId: { type: String, default: null },
+    meetingLink: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["scheduled", "active", "completed", "cancelled"],
+      default: "scheduled",
+    },
   },
   { timestamps: true },
 );

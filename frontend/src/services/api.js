@@ -101,7 +101,7 @@ export const api = {
       method: "GET",
     }),
 
-    addToGoogleCalendar: (meetingId) =>
+  addToGoogleCalendar: (meetingId) =>
     apiRequest({
       url: "/api/v1/meetings/add-to-calendar",
       method: "POST",
@@ -120,5 +120,30 @@ export const api = {
       method: "DELETE",
     }),
 
-  
+  updateMeeting: (meetingId, data) =>
+    apiRequest({
+      url: `/api/v1/meetings/${meetingId}`,
+      method: "PUT",
+      data,
+    }),
+
+  completeMeeting: (meetingId, status) =>
+    apiRequest({
+      url: `/api/v1/meetings/${meetingId}/complete`,
+      method: "PATCH",
+      data: { status },
+    }),
+
+  createRoom: () =>
+    apiRequest({
+      url: "/api/v1/meetings/create-room",
+      method: "POST",
+    }),
+
+  validateMeetingCode: (code) =>
+    apiRequest({
+      url: `/api/v1/meetings/validate/${encodeURIComponent(code)}`,
+      method: "GET",
+    }),
+
 };

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppIcon } from "../assets/icons/AppIcons";
 import Toast from "../components/common/Toast";
+import Skeleton from "../components/common/Skeleton";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../services/api";
 
@@ -135,21 +136,21 @@ export default function AccountSettings() {
       <Toast message={toast} />
 
       <header className="sticky top-0 z-30 border-b border-white/10 bg-zinc-950/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-5">
+        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-2 px-4 sm:px-5">
           <button
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/70 hover:bg-white/10"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-white/70 hover:bg-white/10 sm:gap-2 sm:px-3"
             onClick={() => navigate("/dashboard")}
             type="button"
           >
             <AppIcon name="arrowLeft" size={14} />
-            Back to dashboard
+            <span className="hidden sm:inline">Back to dashboard</span>
           </button>
 
-          <p className="text-sm font-semibold">Account settings</p>
+          <p className="text-xs font-semibold sm:text-sm">Account settings</p>
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-5 px-5 py-8 lg:grid-cols-[1.6fr_1fr]">
+      <main className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 px-4 py-6 sm:gap-5 sm:px-5 sm:py-8 lg:grid-cols-[1.6fr_1fr]">
         <section className="space-y-5">
           <form
             className="rounded-2xl border border-white/10 bg-zinc-900 p-5"
@@ -196,10 +197,7 @@ export default function AccountSettings() {
               type="submit"
             >
               {submittingProfile ? (
-                <span className="flex items-center justify-center gap-2" aria-hidden="true">
-                  <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-white/40" />
-                  <span className="h-3 w-20 animate-pulse rounded bg-white/40" />
-                </span>
+                <Skeleton type="button" />
               ) : (
                 <>
                   <AppIcon name="check" size={14} />
@@ -261,10 +259,7 @@ export default function AccountSettings() {
               type="submit"
             >
               {submittingPassword ? (
-                <span className="flex items-center justify-center gap-2" aria-hidden="true">
-                  <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-zinc-900/40" />
-                  <span className="h-3 w-24 animate-pulse rounded bg-zinc-900/40" />
-                </span>
+                <Skeleton type="button" />
               ) : (
                 <>
                   <AppIcon name="shield" size={14} />
@@ -295,10 +290,7 @@ export default function AccountSettings() {
               type="button"
             >
               {submittingSecurity ? (
-                <span className="flex items-center justify-center gap-2" aria-hidden="true">
-                  <span className="h-3.5 w-3.5 animate-pulse rounded-full bg-white/40" />
-                  <span className="h-3 w-28 animate-pulse rounded bg-white/40" />
-                </span>
+                <Skeleton type="button" />
               ) : (
                 <>
                   <AppIcon name="logout" size={14} />

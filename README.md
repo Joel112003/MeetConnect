@@ -1,260 +1,385 @@
-# MeetConnect 🎥
+<p align="center">
+  <img src="frontend/src/assets/images/MeetConnect.png" width="80" height="80" alt="MeetConnect Logo" />
+</p>
 
-A modern full-stack video meeting platform for real-time collaboration.
-MeetConnect combines secure authentication, instant room-based video calls, live chat, and meeting history into a clean web experience built with React, Node.js, Socket.IO, and WebRTC.
-
-## ✨ Project Overview
-
-MeetConnect is designed for teams, creators, and students who need lightweight browser-based video meetings without installing desktop software.
-
-### Key Highlights
-- 🔐 Secure authentication with JWT and protected routes
-- 📹 Real-time video meetings powered by WebRTC
-- 💬 In-meeting group chat with live delivery
-- 🧾 Meeting history tracking for quick rejoin
-- 👤 Account settings (profile update, password change, logout all devices)
-- 🔁 Session invalidation with token versioning for stronger account security
-- 📧 OTP-based password reset via email
+<h1 align="center">MeetConnect</h1>
+<p align="center">
+  <strong>Real-time video conferencing with Google Calendar integration</strong>
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react" />
+  <img src="https://img.shields.io/badge/Node.js-22-339933?style=flat&logo=node.js" />
+  <img src="https://img.shields.io/badge/MongoDB-9-47A248?style=flat&logo=mongodb" />
+  <img src="https://img.shields.io/badge/WebRTC-P2P-333?style=flat&logo=webrtc" />
+  <img src="https://img.shields.io/badge/Socket.IO-4-010101?style=flat&logo=socket.io" />
+</p>
 
 ---
 
-## 🧰 Tech Stack
+## 📋 Description
+
+MeetConnect is a production-grade video conferencing platform built from scratch. Users can create instant meetings, schedule future sessions with Google Calendar sync, join via shareable codes, and communicate through real-time chat and emoji reactions — all through a premium, mobile-first responsive UI.
+
+---
+
+## ✨ Features
+
+| Category | Features |
+|----------|----------|
+| **Video Conferencing** | Peer-to-peer WebRTC video/audio, multi-participant mesh, mic/camera toggle, screen sharing ready |
+| **Meeting Management** | Instant room creation, scheduled meetings with attendees, meeting history tracking |
+| **Google Calendar** | OAuth2 integration, auto-sync create/update/delete, calendar event links |
+| **Authentication** | Email/password login, Google OAuth, JWT with HTTP-only cookies, brute-force protection |
+| **Password Recovery** | 3-step OTP flow via email (request → verify → reset) |
+| **Account Management** | Profile editing, password change, logout all devices (token versioning) |
+| **Real-time Chat** | In-meeting messaging with sender avatars, timestamps, message history |
+| **Emoji Reactions** | Live emoji overlay broadcast to all participants |
+| **Security** | Rate limiting (Redis-backed), bcrypt hashing, encrypted OAuth tokens, CORS whitelist |
+| **UI/UX** | Mobile-first responsive design, skeleton loading states, dark mode, micro-animations |
+
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
-- React (Vite)
-- React Router
-- Tailwind CSS
-- Socket.IO Client
+- **React 19** — SPA with code-splitting (lazy loading)
+- **Vite** — Fast build tool and dev server
+- **Tailwind CSS 4** — Utility-first styling
+- **WebRTC** — Native browser API for peer-to-peer media
+- **Socket.IO Client** — Real-time signaling and chat
 
 ### Backend
-- Node.js
-- Express.js
-- Socket.IO
-- JWT + bcrypt
-- Nodemailer
-
-### Database
-- MongoDB
-- Mongoose
-
-### Realtime / Communication
-- WebRTC (peer-to-peer media)
-- STUN servers (Google STUN)
-
-### Tooling
-- ESLint
-- Nodemon
+- **Express 5** — REST API server
+- **MongoDB + Mongoose 9** — Document database
+- **Socket.IO** — WebSocket server for signaling
+- **JWT + bcrypt** — Authentication and password hashing
+- **Google APIs** — OAuth2 + Calendar API v3
+- **Nodemailer** — Email delivery for OTP
+- **Redis** — Rate limiting storage
 
 ---
 
-## 🚀 Demo
+## 📁 Folder Structure
 
-### Live Demo
-- 🌐 [Live App](https://your-live-demo-link.com)
-
-### Screenshots
-![Landing Page](https://via.placeholder.com/1200x700?text=MeetConnect+Landing+Screenshot)
-![Dashboard](https://via.placeholder.com/1200x700?text=MeetConnect+Dashboard+Screenshot)
-
-### GIF Previews
-![Meeting Flow GIF](https://via.placeholder.com/1200x700?text=Meeting+Flow+GIF)
-![Chat GIF](https://via.placeholder.com/1200x700?text=Live+Chat+GIF)
-
-### Optional Video Preview
-- 🎬 [Watch Product Walkthrough](https://your-video-link.com)
+```
+MeetConnect/
+├── backend/
+│   ├── server.js                    # Entry point — Express + Socket.IO
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── db.js                # MongoDB connection
+│   │   ├── controllers/
+│   │   │   ├── auth.controllers.js  # Login, register, Google OAuth, password reset
+│   │   │   ├── meeting.controllers.js # CRUD meetings, Google Calendar sync
+│   │   │   ├── account.controllers.js # Profile update, password change
+│   │   │   ├── history.controllers.js # Meeting history tracking
+│   │   │   └── SocketManager.js     # Socket.IO signaling, room registry, chat
+│   │   ├── middleware/
+│   │   │   ├── auth.middleware.js    # JWT verification + token versioning
+│   │   │   └── rateLimiter.middleware.js # Rate limiting (global + auth-specific)
+│   │   ├── models/
+│   │   │   ├── user.model.js        # User schema (auth, OTP, brute-force fields)
+│   │   │   ├── meeting.model.js     # Meeting history schema
+│   │   │   ├── scheduledMeeting.model.js # Scheduled meeting schema
+│   │   │   └── oauthCredential.model.js # Encrypted Google OAuth tokens
+│   │   ├── routes/
+│   │   │   ├── users.routes.js      # Auth + history routes
+│   │   │   ├── account.routes.js    # Profile + security routes
+│   │   │   └── meeting.routes.js    # Meeting CRUD + calendar routes
+│   │   ├── services/
+│   │   │   ├── account.service.js   # Business logic for profile/password
+│   │   │   ├── email.service.js     # Nodemailer OTP sender
+│   │   │   └── googleCalendar.service.js # Google Calendar CRUD + token encryption
+│   │   └── utils/
+│   │       ├── authToken.js         # JWT sign/verify + cookie helpers
+│   │       ├── userMapper.js        # Strip sensitive fields from user objects
+│   │       ├── responses.js         # Standardized API response helpers
+│   │       └── meeting.js           # Meeting code normalization
+│   └── package.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx                  # Router + code-splitting + route prefetch
+│   │   ├── main.jsx                 # React entry point
+│   │   ├── index.css                # Global styles + animations
+│   │   ├── pages/
+│   │   │   ├── Landing.jsx          # Marketing hero page
+│   │   │   ├── Login.jsx            # Email/password + Google login
+│   │   │   ├── SignupPage.jsx       # Registration form
+│   │   │   ├── ForgotPassword.jsx   # 3-step OTP password recovery
+│   │   │   ├── Dashboard.jsx        # Main hub — stats, actions, scheduled meetings
+│   │   │   ├── VideoMeet.jsx        # Video call — lobby → meeting room
+│   │   │   ├── History.jsx          # Meeting history list
+│   │   │   ├── AccountSettings.jsx  # Profile + security settings
+│   │   │   ├── ScheduleMeetingModal.jsx # Meeting scheduler with calendar toggle
+│   │   │   ├── MeetRedirect.jsx     # /meet/:code → /videomeet?code=
+│   │   │   └── TermsAndConditions.jsx
+│   │   ├── components/
+│   │   │   ├── Lobby.jsx            # Pre-join camera preview + back button
+│   │   │   ├── Controls.jsx         # In-call control bar (mic, cam, chat, leave)
+│   │   │   ├── ChatPanel.jsx        # In-meeting chat sidebar/fullscreen
+│   │   │   ├── VideoGrid.jsx        # Responsive video tile layout
+│   │   │   ├── LocalVideo.jsx       # Picture-in-picture self-view
+│   │   │   ├── EmojiBar.jsx         # Emoji reaction picker
+│   │   │   ├── EmojiOverlay.jsx     # Floating emoji animations
+│   │   │   ├── ProtectedRoute.jsx   # Auth guard wrapper
+│   │   │   ├── auth/AuthPageShell.jsx # Shared auth page layout
+│   │   │   ├── common/Skeleton.jsx  # Unified loading skeleton system
+│   │   │   ├── common/Toast.jsx     # Notification toast
+│   │   │   └── dashboard/           # StatCard, ActionCard, JoinMeetingModal
+│   │   ├── hooks/
+│   │   │   ├── useWebRTC.js         # WebRTC peer connection management
+│   │   │   ├── useMediaStream.js    # Camera/mic lifecycle with cleanup
+│   │   │   ├── useChat.js           # Chat message state management
+│   │   │   ├── useSocket.js         # Socket context consumer
+│   │   │   ├── useRateLimit.js      # Client-side form rate limiting
+│   │   │   └── useTimedToast.js     # Auto-dismissing toast helper
+│   │   ├── contexts/
+│   │   │   ├── AuthContext.jsx      # Auth state + actions provider
+│   │   │   ├── AuthContextValue.js  # Context object (separate for HMR)
+│   │   │   └── SocketContext.jsx    # Socket.IO instance provider
+│   │   ├── services/
+│   │   │   ├── api.js               # All REST API call definitions
+│   │   │   ├── apiClient.js         # Axios-like fetch wrapper with auth
+│   │   │   └── socket.service.js    # Socket.IO event helpers
+│   │   ├── utils/
+│   │   │   ├── validators.js        # Form validation (email, password, etc.)
+│   │   │   ├── authStorage.js       # localStorage token/user cache
+│   │   │   ├── mediaUtils.js        # Fallback stream creation
+│   │   │   └── meetingUtils.js      # Meeting code generation helpers
+│   │   └── config/
+│   │       └── webrtc.config.js     # ICE server configuration
+│   └── package.json
+│
+├── system-design.md                 # Architecture documentation (this project)
+├── README.md                        # This file
+└── LICENSE
+```
 
 ---
 
-## ⚙️ Installation Guide
+## ⚙️ Installation
 
-### 1) Clone the repository
+### Prerequisites
+- Node.js ≥ 18
+- MongoDB (Atlas or local)
+- Redis (for rate limiting)
+- Google Cloud Console project (for Calendar + OAuth)
+
+### Clone & Install
 
 ```bash
 git clone https://github.com/Joel112003/MeetConnect.git
 cd MeetConnect
-```
 
-### 2) Install dependencies
-
-Backend:
-
-```bash
+# Backend
 cd backend
 npm install
-```
 
-Frontend:
-
-```bash
+# Frontend
 cd ../frontend
 npm install
 ```
 
-### 3) Run frontend
-
-```bash
-cd frontend
-npm run dev
-```
-
-### 4) Run backend
-
-```bash
-cd backend
-npm run start
-```
-
-Tip for development:
-
-```bash
-cd backend
-npm run test
-```
-
-(`npm run test` uses nodemon for hot-reload development in this project.)
-
 ---
 
-## 🔑 Environment Variables
+## 🔐 Environment Variables
 
-Create a `.env` file inside `backend/`:
+Create `backend/.env`:
 
 ```env
+# ── Server ──
 PORT=8000
-MONGO_URI=mongodb://127.0.0.1:27017/meetconnect
-CLIENT_URL=http://localhost:5173
-JWT_SECRET=your_super_secret_jwt_key
+FRONTEND_URL=http://localhost:5173
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+TRUST_PROXY=false
 
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@example.com
-SMTP_PASS=your_email_app_password
-SMTP_FROM=MeetConnect <no-reply@meetconnect.app>
-NODE_ENV=development
+# ── Database ──
+MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/meetconnect
+
+# ── JWT ──
+JWT_SECRET=your-super-secret-key-min-32-chars
+JWT_EXPIRES_IN=7d
+
+# ── Google OAuth ──
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/meetings/google/callback
+
+# ── Google Calendar Token Encryption ──
+GOOGLE_TOKEN_ENCRYPTION_KEY=32-byte-hex-string
+
+# ── Email (Nodemailer) ──
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+
+# ── Redis ──
+REDIS_URL=redis://localhost:6379
 ```
 
-Optional frontend env in `frontend/.env`:
+Create `frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:8000
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
 
 ---
 
-## 🗂️ Folder Structure
+## 🚀 How to Run
 
-```text
-MeetConnect/
-  backend/
-    server.js
-    src/
-      config/
-      controllers/
-      middleware/
-      models/
-      routes/
-      services/
+### Development
 
-  frontend/
-    src/
-      assets/
-      components/
-      config/
-      contexts/
-      hooks/
-      pages/
-      services/
-      utils/
+```bash
+# Terminal 1 — Backend
+cd backend
+npm run test    # Uses nodemon for hot-reload
+
+# Terminal 2 — Frontend
+cd frontend
+npm run dev     # Vite dev server on :5173
 ```
 
-### Structure Notes
-- `frontend/src/components`: reusable UI pieces (Lobby, Controls, VideoGrid, ChatPanel, etc.)
-- `frontend/src/pages`: route-level screens (Landing, Dashboard, VideoMeet, History, AccountSettings)
-- `backend/src/controllers`: request handlers and Socket manager
-- `backend/src/services`: business logic and email services
-- `backend/src/middleware`: JWT authentication and route protection
+### Production
+
+```bash
+# Backend
+cd backend
+npm start       # Or: npm run prod (uses PM2)
+
+# Frontend
+cd frontend
+npm run build   # Creates dist/ folder
+npm run preview # Preview production build
+```
 
 ---
 
-## 🤝 How to Fork & Contribute
+## 📡 API Endpoints
 
-Contributions are welcome and appreciated.
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/users/register` | Register new user |
+| POST | `/api/v1/users/login` | Email/password login |
+| POST | `/api/v1/users/google-login` | Google OAuth login |
+| POST | `/api/v1/users/logout` | Logout (clear cookie) |
+| POST | `/api/v1/users/forgot-password` | Request password reset OTP |
+| POST | `/api/v1/users/verify-reset-otp` | Verify OTP code |
+| POST | `/api/v1/users/reset-password` | Reset password with verified OTP |
 
-### 1) Fork the repository
-- Click **Fork** on the top-right of the GitHub repository page.
+### Account
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/users/me` | Get current user profile |
+| PUT | `/api/v1/users/update-profile` | Update username/email |
+| PUT | `/api/v1/users/change-password` | Change password |
+| POST | `/api/v1/users/logout-all-devices` | Invalidate all sessions |
 
-### 2) Clone your fork
+### Meetings
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/meetings/create-room` | Create instant meeting room |
+| GET | `/api/v1/meetings/validate/:code` | Validate meeting code |
+| POST | `/api/v1/meetings/schedule` | Schedule a meeting |
+| GET | `/api/v1/meetings` | Get all scheduled meetings |
+| PUT | `/api/v1/meetings/:id` | Update scheduled meeting |
+| DELETE | `/api/v1/meetings/:id` | Delete meeting |
+| PATCH | `/api/v1/meetings/:id/complete` | Mark meeting completed/cancelled |
+| POST | `/api/v1/meetings/add-to-calendar` | Add to Google Calendar |
 
-```bash
-git clone https://github.com/<your-username>/MeetConnect.git
-cd MeetConnect
-```
+### Google Calendar
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/meetings/google/connect` | Start Google OAuth flow |
+| GET | `/api/v1/meetings/google/callback` | OAuth callback handler |
+| GET | `/api/v1/meetings/google/status` | Check calendar connection |
 
-### 3) Create a feature branch
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-### 4) Make changes and commit
-
-```bash
-git add .
-git commit -m "feat: add your feature summary"
-```
-
-### 5) Push and open Pull Request
-
-```bash
-git push origin feature/your-feature-name
-```
-
-Then open a Pull Request to `main` with:
-- Clear title
-- What changed
-- Why it was needed
-- Screenshots/GIFs for UI work
-
----
-
-## 🌟 Features
-
-- User registration and login
-- JWT-based authorization + protected routes
-- OTP password reset with email delivery
-- Create and join meeting rooms using meeting code
-- Live peer-to-peer video/audio calling with WebRTC
-- Real-time in-meeting chat with Socket.IO
-- Meeting history with rejoin support
-- Profile updates and password management
-- Logout from all devices using token version invalidation
+### History
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/users/history` | Get meeting history |
+| POST | `/api/v1/users/history` | Add meeting to history |
 
 ---
 
-## 🧭 Future Improvements
+## 🔄 System Flow Summary
 
-- Add role-based meeting controls (host/moderator permissions)
-- Persist chat history to database
-- Add participant mute/remove controls
-- Add screen recording and downloadable meeting summaries
-- Add unit + integration test coverage
-- Add CI/CD workflows for automated build and lint checks
-- Improve horizontal scaling for Socket.IO rooms (Redis adapter)
+```
+1. User lands on / (Landing page)
+2. Signs up or logs in → JWT stored in HTTP-only cookie
+3. Redirected to /dashboard
+   ├── View stats (total meetings, this week, last meeting)
+   ├── Start instant meeting → generates 6-char code → enters lobby
+   ├── Schedule meeting → creates in DB + optional Google Calendar sync
+   └── Join with code → validates → enters lobby
+4. Lobby → camera/mic preview → "Join now"
+5. Video Meeting room
+   ├── WebRTC peer connections established via Socket.IO signaling
+   ├── In-meeting chat (real-time, broadcast to room)
+   ├── Emoji reactions (float animation)
+   └── Leave meeting → cleanup (close peers, stop media tracks)
+6. Meeting added to history automatically
+```
+
+---
+
+## 📸 Screenshots
+
+> Screenshots of the application UI are captured in the demo video recording.
+
+| Page | Description |
+|------|-------------|
+| Landing | Hero with live meeting mockup, animated UI |
+| Login | Email/password form with Google OAuth button |
+| Dashboard | Stats cards, action cards, scheduled meetings tabs |
+| Video Meeting | Multi-participant grid, controls bar, chat panel |
+| Schedule Modal | Date/time picker, attendees, Google Calendar toggle |
+
+---
+
+## 🔮 Future Improvements
+
+- [ ] Screen sharing support
+- [ ] Meeting recording (MediaRecorder API)
+- [ ] Virtual backgrounds (TensorFlow.js)
+- [ ] Breakout rooms
+- [ ] Waiting room / host approval
+- [ ] End-to-end encryption (E2EE) for media
+- [ ] Mobile app (React Native)
+- [ ] SSO integration (SAML/OIDC)
+- [ ] Meeting analytics dashboard
+- [ ] File sharing in chat
+
+---
+
+## 🎤 How to Explain This Project in an Interview
+
+### 60-Second Pitch
+> "MeetConnect is a full-stack video conferencing platform I built from scratch. It uses **WebRTC for peer-to-peer video/audio** with **Socket.IO as the signaling server** — no media goes through our servers, keeping it efficient and private. Users can create instant meetings or schedule them with **Google Calendar integration** using OAuth2. The auth system uses **JWT with HTTP-only cookies**, bcrypt password hashing, and brute-force protection. The frontend is a **React SPA with code-splitting** and a premium mobile-first UI built with Tailwind CSS. I also implemented a 3-step OTP password recovery flow with Nodemailer."
+
+### Key Technical Highlights
+1. **WebRTC mesh architecture** — Peer-to-peer connections, not SFU. Each participant connects directly to all others.
+2. **Secure room access** — Rooms must be registered via API before anyone can join. Random codes are rejected.
+3. **Google Calendar bidirectional sync** — Create/update/delete meetings automatically reflected in Google Calendar. OAuth refresh tokens stored with AES-256-GCM encryption.
+4. **Token versioning** — "Logout all devices" increments a version counter, instantly invalidating all existing JWTs without a token blacklist.
+5. **Mobile-first responsive design** — Chat panel goes fullscreen on mobile, controls bar uses fluid layouts, skeleton loading states on every page.
+
+### Challenges Solved
+- **Camera not releasing on navigation** → Proper `useEffect` cleanup that stops all media tracks and releases `srcObject` references
+- **Fake meeting codes accessing lobby** → Server-side room registry validation — only codes from `createRoom` or `scheduleMeeting` are accepted
+- **Google Calendar not syncing on delete** → Added `deleteCalendarEventForUser` call before database deletion with best-effort error handling
+- **Horizontal scroll on mobile** → Replaced fixed-width constraints (`min-w-[500px]`) with fluid `w-[calc()]` and `max-width` patterns
+
+### Why These Decisions Were Made
+- **WebRTC mesh over SFU** → Simpler architecture for small meetings (2-6 people), no media server costs
+- **Socket.IO over raw WebSocket** → Auto-reconnection, fallback to polling, room/namespace abstractions
+- **JWT in cookies over localStorage** → HTTP-only cookies prevent XSS token theft
+- **MongoDB over PostgreSQL** → Flexible schema for evolving meeting/calendar metadata, native JSON document model
+- **In-memory room registry over Redis** → Single-server deployment simplicity; Redis used only for rate limiting
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License**.
-
-You are free to use, modify, and distribute this software under the terms of the MIT license.
-For details, see the `LICENSE` file.
-
----
-
-## 🙌 Support
-
-If you find this project useful:
-- Star the repository ⭐
-- Share feedback via issues
-- Contribute improvements through pull requests
+MIT License — see [LICENSE](LICENSE) for details.

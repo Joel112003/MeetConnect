@@ -1,11 +1,31 @@
 import { Server } from "socket.io";
 
+// room registry
+const activeRooms = new Set();
+
+// register room
+export function registerRoom(roomKey) {
+  activeRooms.add(roomKey);
+}
+
+// check if room registered
+export function isRoomRegistered(roomKey) {
+  return activeRooms.has(roomKey);
+}
+
+// check if room active
+export function isRoomActive(roomKey) {
+  return rooms.has(roomKey) && rooms.get(roomKey).size > 0;
+}
+
+// state maps
 const rooms = new Map();
 const messages = new Map();
 const socketJoinTime = new Map();
 const socketToRoom = new Map();
 const socketToName = new Map();
 
+// socket setup
 export function InitializeSocketIO(httpServer) {
   const io = new Server(httpServer, {
     cors: {
@@ -28,6 +48,13 @@ export function InitializeSocketIO(httpServer) {
 
       if (typeof path !== "string" || !path.trim()) {
         console.warn(`[join-call] invalid path from ${socket.id}`);
+        return;
+      }
+
+      // block unregistered rooms
+      if (!activeRooms.has(path)) {
+        console.warn(`[join-call] REJECTED ${socket.id} — room "${path}" is not registered`);
+        socket.emit("join-error", { code: "ROOM_NOT_FOUND", message: "Meeting room not found." });
         return;
       }
 
@@ -146,6 +173,8 @@ export function InitializeSocketIO(httpServer) {
           if (room.size === 0) {
             rooms.delete(path);
             messages.delete(path);
+            // cleanup empty room
+            activeRooms.delete(path);
           }
         }
 

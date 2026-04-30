@@ -18,6 +18,13 @@ const LOGIN_BLOCK_WINDOW_MS = 15 * 60 * 1000;
 
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
+// clear OTP fields
+const clearOtpState = (user) => {
+  user.resetPasswordOtpHash = null;
+  user.resetPasswordOtpExpiresAt = null;
+  user.resetPasswordOtpVerified = false;
+};
+
 export const registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body || {};
@@ -160,7 +167,7 @@ export const requestPasswordResetOtp = async (req, res) => {
 
     const user = await userModel.findOne({ email });
 
-    // Avoid account enumeration by always returning success response.
+    // prevent account enumeration
     if (!user) {
       return res.status(httpStatus.OK).json({
         message: "If an account exists, an OTP has been sent to the email",
@@ -180,10 +187,8 @@ export const requestPasswordResetOtp = async (req, res) => {
     try {
       await sendOtpEmail(email, otp);
     } catch (mailErr) {
-      // Roll back OTP state if email sending fails.
-      user.resetPasswordOtpHash = null;
-      user.resetPasswordOtpExpiresAt = null;
-      user.resetPasswordOtpVerified = false;
+      // rollback on failure
+      clearOtpState(user);
       await user.save();
 
       console.error("Failed to send reset OTP email:", mailErr.message);
@@ -226,9 +231,7 @@ export const verifyPasswordResetOtp = async (req, res) => {
     }
 
     if (new Date() > user.resetPasswordOtpExpiresAt) {
-      user.resetPasswordOtpHash = null;
-      user.resetPasswordOtpExpiresAt = null;
-      user.resetPasswordOtpVerified = false;
+      clearOtpState(user);
       await user.save();
 
       return res.status(httpStatus.BAD_REQUEST).json({
@@ -299,9 +302,7 @@ export const resetPasswordWithOtp = async (req, res) => {
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
-    user.resetPasswordOtpHash = null;
-    user.resetPasswordOtpExpiresAt = null;
-    user.resetPasswordOtpVerified = false;
+    clearOtpState(user);
     await user.save();
 
     return res.status(httpStatus.OK).json({
@@ -321,7 +322,7 @@ export const googleLogin = async (req, res) => {
     if (!credential)
       return res.status(400).json({ message: "No credential provided" });
 
-    // 1. Verify with Google (supports both ID token and access token flows)
+    // verify google token
     let payload = null;
     const isIdToken = typeof credential === "string" && credential.split(".").length === 3;
 
@@ -368,7 +369,7 @@ export const googleLogin = async (req, res) => {
       };
     }
 
-    // 2. Security checks
+    // security checks
     if (!payload.email_verified)
       return res.status(401).json({ message: "Email not verified by Google" });
 
@@ -385,7 +386,7 @@ export const googleLogin = async (req, res) => {
       return res.status(400).json({ message: "Google account email is missing" });
     }
 
-    // 3. Find or create user
+    // find or create user
     let user = await userModel.findOne({ email });
 
     if (!user) {
@@ -408,13 +409,13 @@ export const googleLogin = async (req, res) => {
         authProvider: "google",
       });
     } else if (!user.googleId) {
-      // Existing local user — link Google account
+      // link existing account
       user.googleId = googleId;
       user.authProvider = "google";
       await user.save();
     }
 
-    // 4. Issue your own JWT
+    // issue jwt
     const token = signAppToken(user);
     attachAuthCookie(res, token);
 

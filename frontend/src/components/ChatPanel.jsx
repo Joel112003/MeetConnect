@@ -45,19 +45,19 @@ const ChatPanel = ({ messages, messageInput, onMessageChange, onSend, onClose })
   };
 
   return (
-    <aside className="fixed inset-y-0 right-0 z-[150] flex w-80 flex-col border-l border-white/10 bg-zinc-900 shadow-2xl shadow-black/50">
-      <header className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+    <aside className="fixed inset-0 z-[150] flex flex-col bg-zinc-900 shadow-2xl shadow-black/50 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-80 sm:border-l sm:border-white/10">
+      <header className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5 sm:py-4">
         <h2 className="text-sm font-semibold text-white/90">In-meeting chat</h2>
         <button
           onClick={onClose}
-          className="rounded-full p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
+          className="rounded-full p-2 text-white/50 transition hover:bg-white/10 hover:text-white"
           aria-label="Close chat"
         >
           <AppIcon name="x" size={14} />
         </button>
       </header>
 
-      <div className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 space-y-1 overflow-y-auto px-3 py-3 sm:px-4 sm:py-4">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-4 text-center">
             <div className="mb-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-white/40">
@@ -101,7 +101,7 @@ const ChatPanel = ({ messages, messageInput, onMessageChange, onSend, onClose })
         <div ref={bottomRef} />
       </div>
 
-      <footer className="border-t border-white/10 px-4 py-3">
+      <footer className="border-t border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
         <div className="flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
           <textarea
             value={messageInput}
