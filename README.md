@@ -322,22 +322,6 @@ npm run preview # Preview production build
 6. Meeting added to history automatically
 ```
 
----
-
-## 📸 Screenshots
-
-> Screenshots of the application UI are captured in the demo video recording.
-
-| Page | Description |
-|------|-------------|
-| Landing | Hero with live meeting mockup, animated UI |
-| Login | Email/password form with Google OAuth button |
-| Dashboard | Stats cards, action cards, scheduled meetings tabs |
-| Video Meeting | Multi-participant grid, controls bar, chat panel |
-| Schedule Modal | Date/time picker, attendees, Google Calendar toggle |
-
----
-
 ## 🔮 Future Improvements
 
 - [ ] Screen sharing support
@@ -353,30 +337,6 @@ npm run preview # Preview production build
 
 ---
 
-## 🎤 How to Explain This Project in an Interview
-
-### 60-Second Pitch
-> "MeetConnect is a full-stack video conferencing platform I built from scratch. It uses **WebRTC for peer-to-peer video/audio** with **Socket.IO as the signaling server** — no media goes through our servers, keeping it efficient and private. Users can create instant meetings or schedule them with **Google Calendar integration** using OAuth2. The auth system uses **JWT with HTTP-only cookies**, bcrypt password hashing, and brute-force protection. The frontend is a **React SPA with code-splitting** and a premium mobile-first UI built with Tailwind CSS. I also implemented a 3-step OTP password recovery flow with Nodemailer."
-
-### Key Technical Highlights
-1. **WebRTC mesh architecture** — Peer-to-peer connections, not SFU. Each participant connects directly to all others.
-2. **Secure room access** — Rooms must be registered via API before anyone can join. Random codes are rejected.
-3. **Google Calendar bidirectional sync** — Create/update/delete meetings automatically reflected in Google Calendar. OAuth refresh tokens stored with AES-256-GCM encryption.
-4. **Token versioning** — "Logout all devices" increments a version counter, instantly invalidating all existing JWTs without a token blacklist.
-5. **Mobile-first responsive design** — Chat panel goes fullscreen on mobile, controls bar uses fluid layouts, skeleton loading states on every page.
-
-### Challenges Solved
-- **Camera not releasing on navigation** → Proper `useEffect` cleanup that stops all media tracks and releases `srcObject` references
-- **Fake meeting codes accessing lobby** → Server-side room registry validation — only codes from `createRoom` or `scheduleMeeting` are accepted
-- **Google Calendar not syncing on delete** → Added `deleteCalendarEventForUser` call before database deletion with best-effort error handling
-- **Horizontal scroll on mobile** → Replaced fixed-width constraints (`min-w-[500px]`) with fluid `w-[calc()]` and `max-width` patterns
-
-### Why These Decisions Were Made
-- **WebRTC mesh over SFU** → Simpler architecture for small meetings (2-6 people), no media server costs
-- **Socket.IO over raw WebSocket** → Auto-reconnection, fallback to polling, room/namespace abstractions
-- **JWT in cookies over localStorage** → HTTP-only cookies prevent XSS token theft
-- **MongoDB over PostgreSQL** → Flexible schema for evolving meeting/calendar metadata, native JSON document model
-- **In-memory room registry over Redis** → Single-server deployment simplicity; Redis used only for rate limiting
 
 ---
 
