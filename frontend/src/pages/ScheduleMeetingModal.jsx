@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../services/api";
+import { getStoredToken } from "../utils/authStorage";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -443,8 +444,12 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
   }, []);
 
   const handleConnectGoogle = () => {
+    const token = getStoredToken();
+    const connectUrl = token
+      ? `${API_BASE_URL}/api/v1/meetings/google/connect?token=${encodeURIComponent(token)}`
+      : `${API_BASE_URL}/api/v1/meetings/google/connect`;
     const popup = window.open(
-      `${API_BASE_URL}/api/v1/meetings/google/connect`,
+      connectUrl,
       "google-oauth",
       "width=500,height=600,scrollbars=yes",
     );

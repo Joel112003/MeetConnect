@@ -8,7 +8,8 @@ export const authenticateToken = async (req, res, next) => {
   const bearerToken = authHeader.startsWith("Bearer ")
     ? authHeader.slice(7)
     : null;
-  const token = req.cookies?.token || bearerToken;
+  const queryToken = typeof req.query?.token === "string" ? req.query.token : null;
+  const token = req.cookies?.token || bearerToken || queryToken;
 
   if (!token) {
     return sendError(
