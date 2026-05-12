@@ -420,23 +420,8 @@ export const googleLogin = async (req, res) => {
     let user = await userModel.findOne({ email: String(email).toLowerCase() });
 
     if (!user) {
-      const baseUsername = (name || email.split("@")[0] || "user").trim();
-      let username = baseUsername;
-      let suffix = 1;
-      while (await userModel.exists({ username })) {
-        suffix += 1;
-        username = `${baseUsername}${suffix}`;
-      }
-
-      const randomPassword = randomBytes(24).toString("hex");
-      const password = await bcrypt.hash(randomPassword, 10);
-
-      user = await userModel.create({
-        username,
-        email,
-        password,
-        googleId,
-        authProvider: "google",
+      return res.status(404).json({
+        message: "No account found for this Google email. Please sign up first.",
       });
     } else if (!user.googleId) {
       // link existing account
