@@ -79,7 +79,16 @@ const clearUserSession = (setUser, setToken, setError) => {
   setError(null);
 };
 
+const isTokenExpired = (token) => {
+  const payload = decodeTokenPayload(token);
+  if (!payload?.exp) return false;
+  return Date.now() >= payload.exp * 1000;
+};
+
 const applyAuthSuccess = ({ data, setToken, setUser }) => {
+  if (!data?.token) {
+    throw new Error("Authentication token missing");
+  }
   setStoredToken(data.token);
   setToken(data.token);
   setUserWithCache(setUser, data, data.token);
@@ -110,6 +119,12 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      clearUserSession(setUser, setToken, setError);
       setLoading(false);
       return;
     }
@@ -149,7 +164,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true, data };
     } catch (err) {
       setError(err.message);
-      return { success: false, error: err.message };
+      return { success: false, error: err.message, status: err.status };
     } finally {
       setLoading(false);
     }
@@ -164,7 +179,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true, data };
     } catch (err) {
       setError(err.message);
-      return { success: false, error: err.message };
+      return { success: false, error: err.message, status: err.status };
     } finally {
       setLoading(false);
     }

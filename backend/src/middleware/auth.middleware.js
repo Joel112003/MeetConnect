@@ -2,14 +2,14 @@ import jwt from "jsonwebtoken";
 import httpStatus from "http-status";
 import userModel from "../models/user.model.js";
 import { sendError } from "../utils/responses.js";
+import { validateSession } from "../utils/sessionStore.js";
 
 export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers.authorization || "";
   const bearerToken = authHeader.startsWith("Bearer ")
     ? authHeader.slice(7)
     : null;
-  const queryToken = typeof req.query?.token === "string" ? req.query.token : null;
-  const token = req.cookies?.token || bearerToken || queryToken;
+  const token = req.cookies?.token || bearerToken;
 
   if (!token) {
     return sendError(
@@ -29,6 +29,16 @@ export const authenticateToken = async (req, res, next) => {
     const tokenVersion = Number(decoded.tokenVersion || 0);
     const userTokenVersion = Number(user.tokenVersion || 0);
     if (tokenVersion !== userTokenVersion) {
+      return sendError(
+        res,
+        httpStatus.UNAUTHORIZED,
+        "Session expired. Please login again.",
+      );
+    }
+
+    const sessionId = decoded.sessionId;
+    const sessionValid = await validateSession(user._id, sessionId);
+    if (!sessionValid) {
       return sendError(
         res,
         httpStatus.UNAUTHORIZED,

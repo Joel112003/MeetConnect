@@ -6,9 +6,9 @@ export const getCookieOptions = () => ({
   secure: process.env.NODE_ENV === "production",
 });
 
-export const signAppToken = (user) => {
+export const signAppToken = (user, sessionId) => {
   return jwt.sign(
-    { id: user._id, tokenVersion: user.tokenVersion || 0 },
+    { id: user._id, tokenVersion: user.tokenVersion || 0, sessionId },
     process.env.JWT_SECRET,
     {
       expiresIn: "1h",

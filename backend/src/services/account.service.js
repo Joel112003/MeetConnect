@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import userModel from "../models/user.model.js";
 import { sendSecurityNotificationEmail } from "./email.service.js";
 import { toPublicUser } from "../utils/userMapper.js";
+import { clearAllSessions } from "../utils/sessionStore.js";
 
 export const updateProfileService = async (userId, payload) => {
   const user = await userModel.findById(userId);
@@ -102,6 +103,8 @@ export const logoutAllDevicesService = async (userId) => {
 
   user.tokenVersion = (user.tokenVersion || 0) + 1;
   await user.save();
+
+  await clearAllSessions(userId);
 
   return { message: "Logged out from all devices successfully" };
 };

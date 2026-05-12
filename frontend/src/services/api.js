@@ -48,6 +48,13 @@ export const api = {
       data: { credential: token },
     }),
 
+  checkUsernameAvailability: (username) =>
+    apiRequest({
+      url: "/api/v1/users/username-available",
+      method: "GET",
+      params: { username },
+    }),
+
   logout: () =>
     apiRequest({
       url: "/api/v1/users/logout",

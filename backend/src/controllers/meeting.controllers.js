@@ -15,9 +15,16 @@ import {
 import { registerRoom, isRoomRegistered } from "./SocketManager.js";
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_ORIGIN = (() => {
+  try {
+    return new URL(FRONTEND_URL).origin;
+  } catch {
+    return "http://localhost:5173";
+  }
+})();
 
 const popupMsg = (msg) =>
-  `<script>window.opener&&window.opener.postMessage('${msg}','*');window.close();</script>`;
+  `<script>const origin='${FRONTEND_ORIGIN}';window.opener&&window.opener.postMessage('${msg}',origin);window.close();</script>`;
 
 const encodeState = (payload) =>
   jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "10m" });

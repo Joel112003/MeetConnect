@@ -10,6 +10,10 @@ import {
   clearAuthCookie,
 } from "../utils/authToken.js";
 import { toPublicUser } from "../utils/userMapper.js";
+import {
+  createSession,
+  clearSession,
+} from "../utils/sessionStore.js";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const OTP_EXPIRY_MINUTES = 10;
@@ -28,21 +32,23 @@ const clearOtpState = (user) => {
 export const registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body || {};
+    const normalizedUsername = String(username || "").trim();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    if (!username || !email || !password) {
+    if (!normalizedUsername || !normalizedEmail || !password) {
       return res.status(httpStatus.BAD_REQUEST).json({
         message: "All fields are required",
       });
     }
 
-    const existingUser = await userModel.findOne({ email });
+    const existingUser = await userModel.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(httpStatus.BAD_REQUEST).json({
         message: "Email already exists",
       });
     }
 
-    const existingUsername = await userModel.findOne({ username });
+    const existingUsername = await userModel.findOne({ username: normalizedUsername });
     if (existingUsername) {
       return res.status(httpStatus.BAD_REQUEST).json({
         message: "Username already exists",
@@ -52,12 +58,13 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await userModel.create({
-      username,
-      email,
+      username: normalizedUsername,
+      email: normalizedEmail,
       password: hashedPassword,
     });
 
-    const token = signAppToken(newUser);
+    const sessionId = await createSession(newUser._id);
+    const token = signAppToken(newUser, sessionId);
     attachAuthCookie(res, token);
 
     const userResponse = toPublicUser(newUser);
@@ -123,7 +130,8 @@ export const loginUser = async (req, res) => {
     user.loginBlockedUntil = null;
     await user.save();
 
-    const token = signAppToken(user);
+    const sessionId = await createSession(user._id);
+    const token = signAppToken(user, sessionId);
     attachAuthCookie(res, token);
 
     const userResponse = toPublicUser(user);
@@ -144,6 +152,7 @@ export const loginUser = async (req, res) => {
 
 export const logoutUser = async (req, res) => {
   try {
+    await clearSession(req.user?.id, req.user?.sessionId);
     clearAuthCookie(res);
     res.status(httpStatus.OK).json({
       message: "User logged out successfully",
@@ -319,12 +328,18 @@ export const resetPasswordWithOtp = async (req, res) => {
 export const googleLogin = async (req, res) => {
   try {
     const { credential } = req.body;
-    if (!credential)
+    if (!credential) {
       return res.status(400).json({ message: "No credential provided" });
+    }
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res.status(500).json({ message: "Google client not configured" });
+    }
 
     // verify google token
     let payload = null;
-    const isIdToken = typeof credential === "string" && credential.split(".").length === 3;
+    const isIdToken =
+      typeof credential === "string" && credential.split(".").length === 3;
 
     if (isIdToken) {
       const ticket = await client.verifyIdToken({
@@ -341,8 +356,14 @@ export const googleLogin = async (req, res) => {
       }
       const tokenInfo = await tokenInfoResponse.json();
 
-      if (tokenInfo.aud !== process.env.GOOGLE_CLIENT_ID) {
+      const audience =
+        tokenInfo.aud || tokenInfo.audience || tokenInfo.issued_to;
+      if (audience !== process.env.GOOGLE_CLIENT_ID) {
         return res.status(401).json({ message: "Invalid Google audience" });
+      }
+
+      if (Number(tokenInfo.expires_in) <= 0) {
+        return res.status(401).json({ message: "Google token expired" });
       }
 
       const userInfoResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
@@ -386,8 +407,17 @@ export const googleLogin = async (req, res) => {
       return res.status(400).json({ message: "Google account email is missing" });
     }
 
+    if (!googleId) {
+      return res.status(400).json({ message: "Google account id is missing" });
+    }
+
+    const existingGoogleUser = await userModel.findOne({ googleId });
+    if (existingGoogleUser && String(existingGoogleUser.email).toLowerCase() !== email.toLowerCase()) {
+      return res.status(409).json({ message: "Google account is linked to another user" });
+    }
+
     // find or create user
-    let user = await userModel.findOne({ email });
+    let user = await userModel.findOne({ email: String(email).toLowerCase() });
 
     if (!user) {
       const baseUsername = (name || email.split("@")[0] || "user").trim();
@@ -416,7 +446,8 @@ export const googleLogin = async (req, res) => {
     }
 
     // issue jwt
-    const token = signAppToken(user);
+    const sessionId = await createSession(user._id);
+    const token = signAppToken(user, sessionId);
     attachAuthCookie(res, token);
 
     res.json({
@@ -427,5 +458,30 @@ export const googleLogin = async (req, res) => {
   } catch (err) {
     console.error("Google login error:", err);
     res.status(401).json({ message: "Invalid Google token" });
+  }
+};
+
+export const checkUsernameAvailability = async (req, res) => {
+  try {
+    const username = String(req.query?.username || "").trim();
+
+    if (!username || username.length < 2) {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        message: "Username must be at least 2 characters",
+      });
+    }
+
+    const existing = await userModel.findOne({
+      username: { $regex: `^${username.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}$`, $options: "i" },
+    });
+
+    return res.status(httpStatus.OK).json({
+      available: !existing,
+    });
+  } catch (err) {
+    console.error("Username availability error:", err.message);
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: "Failed to validate username",
+    });
   }
 };
