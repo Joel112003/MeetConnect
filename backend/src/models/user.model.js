@@ -47,5 +47,14 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+userSchema.index(
+  { email: 1, resetPasswordOtpExpiresAt: 1 },
+  { sparse: true, name: "idx_email_otp_expiry" }
+);
+userSchema.index(
+  { username: 1 },
+  { collation: { locale: "en", strength: 2 }, name: "idx_username_ci" }
+);
+
 const userModel = mongoose.model("User", userSchema);
 export default userModel;

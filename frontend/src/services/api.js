@@ -108,6 +108,13 @@ export const api = {
       method: "GET",
     }),
 
+  // Returns a short-lived token to pass as ?t= in the popup URL
+  getGoogleConnectToken: () =>
+    apiRequest({
+      url: "/api/v1/meetings/google/connect-token",
+      method: "GET",
+    }),
+
   addToGoogleCalendar: (meetingId) =>
     apiRequest({
       url: "/api/v1/meetings/add-to-calendar",

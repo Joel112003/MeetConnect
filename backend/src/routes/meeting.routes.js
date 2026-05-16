@@ -10,6 +10,7 @@ import {
   connectGoogleCalendar,
   googleCalendarCallback,
   getGoogleCalendarConnectionStatus,
+  generateGoogleConnectToken,
   createRoom,
   validateMeetingCode,
 } from "../controllers/meeting.controllers.js";
@@ -31,8 +32,9 @@ router.post("/create-room",     authenticateToken, createRoom);
 router.get("/validate/:code",   authenticateToken, validateMeetingCode);
 
 // google calendar
-router.post("/add-to-calendar", authenticateToken, addToGoogleCalendar);
-router.get("/google/connect",   authenticateToken, connectGoogleCalendar);
-router.get("/google/status",    authenticateToken, getGoogleCalendarConnectionStatus);
+router.post("/add-to-calendar",       authenticateToken, addToGoogleCalendar);
+router.get("/google/connect-token",   authenticateToken, generateGoogleConnectToken);
+router.get("/google/connect",         connectGoogleCalendar);
+router.get("/google/status",          authenticateToken, getGoogleCalendarConnectionStatus);
 
 export default router;

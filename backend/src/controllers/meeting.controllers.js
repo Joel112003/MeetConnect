@@ -38,8 +38,32 @@ const decodeState = (value) => {
 };
 
 // google oauth
+export const generateGoogleConnectToken = async (req, res) => {
+  try {
+    const token = jwt.sign(
+      { id: req.user.id, purpose: "gcal-connect" },
+      process.env.JWT_SECRET,
+      { expiresIn: "90s" },
+    );
+    return res.json({ success: true, token });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to generate connect token" });
+  }
+};
 
 export const connectGoogleCalendar = async (req, res) => {
+
+  const queryToken = typeof req.query?.t === "string" ? req.query.t : null;
+  if (queryToken && !req.user) {
+    try {
+      const decoded = jwt.verify(queryToken, process.env.JWT_SECRET);
+      if (decoded?.purpose !== "gcal-connect") throw new Error("wrong purpose");
+      req.user = decoded;
+    } catch {
+      return res.send(popupMsg("gcal-error"));
+    }
+  }
+
   const oauth2Client = createGoogleOAuthClient();
 
   const user = await userModel.findById(req.user.id).select("email");

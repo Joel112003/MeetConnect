@@ -442,22 +442,32 @@ export default function ScheduleMeetingModal({ onClose, onScheduled }) {
     return () => { active = false; };
   }, []);
 
-  const handleConnectGoogle = () => {
-    const connectUrl = `${API_BASE_URL}/api/v1/meetings/google/connect`;
-    const popup = window.open(
-      connectUrl,
-      "google-oauth",
-      "width=500,height=600,scrollbars=yes",
-    );
-    const timer = setInterval(() => {
-      if (popup?.closed) {
-        clearInterval(timer);
-        api
-          .getGoogleCalendarStatus()
-          .then((data) => setGoogleConnected(Boolean(data?.connected)))
-          .catch(() => setGoogleConnected(false));
-      }
-    }, 500);
+  const handleConnectGoogle = async () => {
+    try {
+      // Step 1: get a short-lived token via our normal authenticated API call
+      // (cookie IS sent here because it's a fetch from the same origin/JS context)
+      const data = await api.getGoogleConnectToken();
+      const connectUrl = `${API_BASE_URL}/api/v1/meetings/google/connect?t=${encodeURIComponent(data.token)}`;
+
+      // Step 2: open the popup with the token in the URL — no cookie needed
+      const popup = window.open(
+        connectUrl,
+        "google-oauth",
+        "width=500,height=600,scrollbars=yes",
+      );
+      const timer = setInterval(() => {
+        if (popup?.closed) {
+          clearInterval(timer);
+          api
+            .getGoogleCalendarStatus()
+            .then((d) => setGoogleConnected(Boolean(d?.connected)))
+            .catch(() => setGoogleConnected(false));
+        }
+      }, 500);
+    } catch (err) {
+      console.error("Failed to initiate Google Calendar connect:", err);
+      setError("Could not start Google Calendar connection. Please try again.");
+    }
   };
 
   const handleSubmit = async () => {

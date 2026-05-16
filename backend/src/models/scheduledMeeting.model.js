@@ -26,4 +26,19 @@ const scheduledMeetingSchema = new mongoose.Schema(
 
 scheduledMeetingSchema.index({ user_id: 1, startTime: 1 });
 
+scheduledMeetingSchema.index(
+  { meetingCode: 1 },
+  { collation: { locale: "en", strength: 2 }, name: "idx_meetingCode_ci" }
+);
+
+scheduledMeetingSchema.index(
+  { user_id: 1, _id: 1 },
+  { name: "idx_userId_id" }
+);
+
+scheduledMeetingSchema.index(
+  { user_id: 1, status: 1, startTime: 1 },
+  { name: "idx_userId_status_startTime" }
+);
+
 export default mongoose.model("ScheduledMeeting", scheduledMeetingSchema);
