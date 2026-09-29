@@ -68,7 +68,7 @@ const Tile = ({ initials, name, gradFrom, gradTo, textCol, isSpeaking, delay, ba
     >
       {initials}
     </div>
-    <span className="text-[10px] sm:text-[11px] text-white/45">{name}</span>
+    <span className="text-[10px] sm:text-[11px] text-white/70">{name}</span>
 
     {isSpeaking && (
       <div className="absolute bottom-2 left-2.5 flex items-end gap-[2px] h-3.5">
@@ -143,7 +143,7 @@ const MockMeetingCard = () => (
 
       <div className="mb-3 flex items-center justify-between gap-2">
         <span
-          className="text-[12px] sm:text-[13px] font-semibold text-white/45 truncate"
+          className="text-[12px] sm:text-[13px] font-semibold text-white/70 truncate"
           style={{ fontFamily: "'Syne',sans-serif" }}
         >
           Design Review · 4B
@@ -171,7 +171,7 @@ const MockMeetingCard = () => (
             />
           ))}
         </div>
-        <span className="text-[10px] tracking-wide text-white/20">Alex speaking…</span>
+        <span className="text-[10px] tracking-wide text-white/60">Alex speaking…</span>
       </div>
 
 
@@ -199,6 +199,8 @@ const MockMeetingCard = () => (
         ].map((b, i) => (
           <button
             key={i}
+            type="button"
+            aria-label={["Mute microphone", "Toggle camera", "End call", "More meeting options"][i]}
 
             className={`flex h-11 w-11 sm:h-10 sm:w-10 items-center justify-center rounded-[10px] border transition-all duration-150 hover:scale-105 active:scale-95 ${b.cls}`}
           >
@@ -216,11 +218,6 @@ export default function Landing() {
   const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap";
-    document.head.appendChild(link);
-
     const params = new URLSearchParams(window.location.search);
     const show = params.get("logout") === "1" || sessionStorage.getItem("postLogoutToast") === "1";
     if (show) {
@@ -406,7 +403,7 @@ export default function Landing() {
                       <p className="text-[20px] sm:text-[22px] font-bold tracking-tight" style={{ fontFamily: "'Syne',sans-serif" }}>
                         {n}
                       </p>
-                      <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/22">{l}</p>
+                      <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/65">{l}</p>
                     </div>
                   </React.Fragment>
                 ))}
@@ -428,12 +425,12 @@ export default function Landing() {
       <footer className="relative z-10 border-t border-white/[0.06] bg-[#071120]/60 py-6 sm:py-7">
         <Container>
 
-          <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left text-xs text-white/22">
+          <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:justify-between sm:text-left text-xs text-white/65">
             <p style={{ fontFamily: "'Syne',sans-serif" }}>© 2026 MeetConnect. All rights reserved.</p>
             <div className="flex items-center gap-4 sm:gap-5">
-              <a href="/privacy-policy"     className="transition hover:text-white/55">Privacy Policy</a>
-              <span className="text-white/10">·</span>
-              <a href="/terms-and-conditions" className="transition hover:text-white/55">Terms & Conditions</a>
+              <a href="/privacy-policy"     className="transition hover:text-white">Privacy Policy</a>
+              <span className="text-white/40">·</span>
+              <a href="/terms-and-conditions" className="transition hover:text-white">Terms & Conditions</a>
             </div>
           </div>
         </Container>

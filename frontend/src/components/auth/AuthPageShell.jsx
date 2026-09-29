@@ -25,6 +25,8 @@ export default function AuthPageShell({
             <img
               src={meetConnectLogo}
               alt="MeetConnect logo"
+              width="612"
+              height="408"
               className="h-full w-full scale-225 object-contain"
             />
           </span>
@@ -58,6 +60,8 @@ export default function AuthPageShell({
               <img
                 src={meetConnectLogo}
                 alt="MeetConnect logo"
+                width="612"
+                height="408"
                 className="h-full w-full scale-225 object-contain"
               />
             </div>

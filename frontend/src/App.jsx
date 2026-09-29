@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { SocketProvider } from "./contexts/SocketContext";
 import Skeleton from "./components/common/Skeleton";
@@ -19,36 +19,6 @@ const RouteLoader = () => <Skeleton type="page" srLabel="Loading route" />;
 
 
 function App() {
-  useEffect(() => {
-    let cancelled = false;
-    let timeoutId = null;
-    let idleId = null;
-
-    const prefetchCriticalRoutes = async () => {
-      if (cancelled) return;
-      await Promise.all([
-        import("./pages/Dashboard"),
-        import("./pages/VideoMeet"),
-      ]);
-    };
-
-    if ("requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(prefetchCriticalRoutes, {
-        timeout: 2000,
-      });
-    } else {
-      timeoutId = window.setTimeout(prefetchCriticalRoutes, 600);
-    }
-
-    return () => {
-      cancelled = true;
-      if (timeoutId) window.clearTimeout(timeoutId);
-      if (idleId && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
-      }
-    };
-  }, []);
-
   return (
     <Suspense fallback={<RouteLoader />}>
       <Routes>
