@@ -13,13 +13,14 @@
   <img src="https://img.shields.io/badge/WebRTC-P2P-333?style=flat&logo=webrtc" />
   <img src="https://img.shields.io/badge/Socket.IO-4-010101?style=flat&logo=socket.io" />
   <img src="https://img.shields.io/badge/Redis-Rate%20Limiting-DC382D?style=flat&logo=redis" />
+  <a href="https://github.com/Joel112003/MeetConnect/actions/workflows/ci.yml"><img src="https://github.com/Joel112003/MeetConnect/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
 </p>
 
 ---
 
 ## 📋 Description
 
-MeetConnect is a production-grade video conferencing platform built from scratch. Users can create instant meetings, schedule future sessions with Google Calendar sync, join via shareable codes, and communicate through real-time chat and emoji reactions — all through a premium, mobile-first responsive UI.
+MeetConnect is a mobile-first video conferencing app using WebRTC (mesh) and Socket.IO signaling. Users can create instant meetings, schedule future sessions with Google Calendar sync, join via shareable codes, and communicate through real-time chat and emoji reactions.
 
 ---
 
@@ -36,7 +37,7 @@ MeetConnect is a production-grade video conferencing platform built from scratch
 | **Real-time Chat** | In-meeting messaging with persistent history (Redis), sender names, timestamps |
 | **Emoji Reactions** | Live emoji overlay animations broadcast to all participants |
 | **Security** | Rate limiting (Redis-backed), bcrypt hashing, AES-encrypted OAuth tokens, CORS whitelist, session store validation |
-| **Performance** | MongoDB indexes on all hot query paths, Redis adapter for Socket.IO, lazy-loaded routes with idle prefetch |
+| **Performance** | MongoDB indexes on hot query paths, Redis adapter for Socket.IO, lazy-loaded routes |
 | **UI/UX** | Mobile-first responsive design, skeleton loading states, dark mode, micro-animations |
 
 ---
@@ -44,7 +45,7 @@ MeetConnect is a production-grade video conferencing platform built from scratch
 ## 🛠 Tech Stack
 
 ### Frontend
-- **React 19** — SPA with lazy loading + idle prefetch for critical routes
+- **React 19** — SPA with route-level lazy loading
 - **Vite 8** — Fast build tool and dev server
 - **Tailwind CSS 4** — Utility-first styling
 - **WebRTC** — Native browser API for peer-to-peer media streams
@@ -381,12 +382,42 @@ Indexes are defined at the model level for all hot query paths:
 
 ---
 
-## 🚢 Deployment (Render)
+## 🧪 Testing
 
-Both services are deployed on [Render](https://render.com):
+Backend tests use Jest with ESM support, Supertest, MongoMemoryServer, ioredis-mock, and mocked Google/email services. Run them from `backend/`:
 
-- **Backend** — Web Service (Node.js), set `TRUST_PROXY=true`
-- **Frontend** — Static Site, build command: `npm run build`, publish dir: `dist`
+```bash
+npm test
+npm run test:coverage
+```
+
+The signaling load test connects Socket.IO clients to one registered room. It can be run against a deployed backend with `LOAD_TEST_SERVER_URL` and the backend's `REDIS_URL` configured:
+
+```bash
+LOAD_TEST_SERVER_URL=https://your-backend.onrender.com node scripts/socket-load-test.mjs
+```
+
+The load test measures signaling connections and room joins only. It does not send WebRTC camera, microphone, screen-share, or other media traffic.
+
+Latest measured run against the deployed Render backend: 96 of 100 clients joined successfully (96.0%); 4 clients timed out, with an 8,646 ms median join time. The run used Socket.IO polling/WebSocket negotiation and did not include WebRTC media traffic.
+
+## 🔁 CI/CD
+
+The GitHub Actions workflow runs on pushes and pull requests targeting `main` or `master`. It runs `npm ci` and `npm run test:coverage` in `backend/`, then runs `npm ci`, frontend lint, and the Vite production build in `frontend/`.
+
+## ⚠️ Known limitations
+
+- Mesh topology limits the practical participant count because each browser maintains peer connections with other participants.
+- Signaling was load-tested with 100 participants, but WebRTC media traffic was not included.
+- No real-device or real-user testing has been completed yet.
+- MongoDB index performance has not been benchmarked at scale.
+
+## 🚢 Deployment
+
+The frontend is deployed on [Vercel](https://vercel.com/) and the backend is deployed on [Render](https://render.com/):
+
+- **Frontend** — Vercel project using the `frontend/` directory and `npm run build`
+- **Backend** — Render Web Service (Node.js) at `https://meetconnect-1-ugsp.onrender.com`, set `TRUST_PROXY=true`
 
 Make sure to set all environment variables in the Render dashboard. Set `GOOGLE_REDIRECT_URI` to your production backend URL:
 ```
