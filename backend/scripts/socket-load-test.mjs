@@ -28,7 +28,7 @@ async function connectParticipant(room, index) {
   return new Promise((resolve) => {
     const startedAt = performance.now();
     const socket = io(serverUrl, {
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
       reconnection: false,
       timeout: timeoutMs,
     });
