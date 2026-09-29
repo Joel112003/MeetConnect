@@ -7,8 +7,8 @@ if (!process.env.REDIS_URL) {
 export const client = createClient({
   url: process.env.REDIS_URL,
   socket: {
-    tls: true,                
-    rejectUnauthorized: false 
+    tls: process.env.REDIS_URL.startsWith("rediss://"),
+    rejectUnauthorized: false,
   }
 });
 
