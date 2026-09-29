@@ -5,7 +5,9 @@ import { client } from "../config/redisClient.js";
 const loginWindowMs = 15 * 60 * 1000;
 
 const createRedisStore = (prefix) =>
-  new RedisStore({
+  process.env.NODE_ENV === "test"
+    ? undefined
+    : new RedisStore({
     sendCommand: (...args) => client.sendCommand(args),
     prefix,
   });
